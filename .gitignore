@@ -146,3 +146,30 @@ dmypy.json
 .pytype/
 
 # End of https://www.toptal.com/developers/gitignore/api/django
+
+####################################################################
+# React App
+####################################################################
+
+# dependencies
+web_client/node_modules
+web_client/.pnp
+.pnp.js
+
+# testing
+web_client/coverage
+
+# production
+web_client/build
+
+# misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
