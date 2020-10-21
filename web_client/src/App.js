@@ -1,17 +1,13 @@
 import React from 'react';
 import logo from './logo.svg';
-import {AlgorithmsList} from './features/algorithms/AlgorithmsList'
-import {AlgorithmForm} from "./features/algorithms/AlgorithmForm";
-import {Csrf} from "./features/csrf/csrf";
 import './App.css';
+import MuiTreasuryLayout from "./layout/MuiTreasuryLayout";
+import CustomLayout from "./layout/CustomLayout";
 
 function App() {
   return (
-      <div>
-        <Csrf/>
-        <AlgorithmsList/>
-        <AlgorithmForm/>
-      </div>
+      <MuiTreasuryLayout/>
+      // <CustomLayout/>
   );
 }
 

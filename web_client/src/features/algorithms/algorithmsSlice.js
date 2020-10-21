@@ -11,14 +11,14 @@ export const getAlgorithms = createAsyncThunk('algorithms/get', async () => {
 async function long(){
   console.log('running long task...')
   let i=0
-  for (i; i<2*10**9; i++){
+  for (i; i<3*10**9; i++){
   }
   return i
 }
 
 export const createAlgorithm = createAsyncThunk('algorithms/create', async ({name, csrf_token}, {rejectWithValue}) => {
-  const long_result = await long()
-  console.log('long_result: ', long_result)
+  // const long_result = await long()
+  // console.log('long_result: ', long_result)
   const body = {'name': name}
   // have in mind that when using session authentication backend csrf token is only necessary for authenticated requests
   const config = {headers: {'X-CSRFToken': csrf_token}}
