@@ -19,7 +19,8 @@ import SettingsNotification from 'src/components/SettingsNotification';
 import { AuthProvider } from 'src/contexts/JWTAuthContext';
 import useSettings from 'src/hooks/useSettings';
 import { createTheme } from 'src/theme';
-import routes, { renderRoutes } from 'src/routes';
+import routes, { renderRoutes } from 'src/routesCustom';
+import {Csrf} from "./features/csrf/csrf";
 
 const jss = create({ plugins: [...jssPreset().plugins, rtl()] });
 const history = createBrowserHistory();
@@ -41,6 +42,7 @@ const App = () => {
             dense
             maxSnack={3}
           >
+            <Csrf/>
             <Router history={history}>
               <AuthProvider>
                 <GlobalStyles />

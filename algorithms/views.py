@@ -16,7 +16,7 @@ class AlgorithmMixin(object):
 decorators = [csrf_protect]
 
 
-# @method_decorator(decorators, name='dispatch')
+@method_decorator(decorators, name='dispatch')
 class AlgorithmViewSet(AlgorithmMixin, viewsets.ModelViewSet):
 
     def list(self, request, *args, **kwargs):

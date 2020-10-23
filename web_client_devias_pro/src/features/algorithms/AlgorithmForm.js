@@ -24,6 +24,7 @@ export const AlgorithmForm = () => {
     const onCreatePressed = async (values) => {
         // in case of no error the thunk returns a resolved promise with a fulfilled action object
         // in case of error, the thunk returns a resolved promise with a rejected action object
+        console.log('values', values, 'csrf_token', csrf_token)
         await dispatch(createAlgorithm({'name': values.name, 'csrf_token': csrf_token}))
         // we don't use the try catch here. We use it inside the createAlgorithm payload creator so that we get the
         // server generated message
@@ -97,8 +98,10 @@ export const AlgorithmForm = () => {
                     }
                     return errors
                 }}
-                onSubmit= {(values, {setSubmitting}) => {
-                    const res = onCreatePressed(values)
+                onSubmit = { async (values, {setSubmitting}) => {
+                    await onCreatePressed(values)
+                    // isSubmitting must be set to false after the onCreatePressed returns a resolved promise
+                    setSubmitting(false)
 
                     // onCreatePressed(values).then(() => {
                     //     console.log('after handler')
