@@ -394,47 +394,47 @@ const NavBar = ({ onMobileClose, openMobile }) => {
             </RouterLink>
           </Box>
         </Hidden>
-        <Box p={2}>
-          <Box
-            display="flex"
-            justifyContent="center"
-          >
-            <RouterLink to="/app/account">
-              <Avatar
-                alt="User"
-                className={classes.avatar}
-                src={user.avatar}
-              />
-            </RouterLink>
-          </Box>
-          <Box
-            mt={2}
-            textAlign="center"
-          >
-            <Link
-              component={RouterLink}
-              to="/app/account"
-              variant="h5"
-              color="textPrimary"
-              underline="none"
-            >
-              {user.name}
-            </Link>
-            <Typography
-              variant="body2"
-              color="textSecondary"
-            >
-              Your tier:
-              {' '}
-              <Link
-                component={RouterLink}
-                to="/pricing"
-              >
-                {user.tier}
-              </Link>
-            </Typography>
-          </Box>
-        </Box>
+        {/*<Box p={2}>*/}
+        {/*  <Box*/}
+        {/*    display="flex"*/}
+        {/*    justifyContent="center"*/}
+        {/*  >*/}
+        {/*    <RouterLink to="/app/account">*/}
+        {/*      <Avatar*/}
+        {/*        alt="User"*/}
+        {/*        className={classes.avatar}*/}
+        {/*        src={user.avatar}*/}
+        {/*      />*/}
+        {/*    </RouterLink>*/}
+        {/*  </Box>*/}
+        {/*  <Box*/}
+        {/*    mt={2}*/}
+        {/*    textAlign="center"*/}
+        {/*  >*/}
+        {/*    <Link*/}
+        {/*      component={RouterLink}*/}
+        {/*      to="/app/account"*/}
+        {/*      variant="h5"*/}
+        {/*      color="textPrimary"*/}
+        {/*      underline="none"*/}
+        {/*    >*/}
+        {/*      {user.name}*/}
+        {/*    </Link>*/}
+        {/*    <Typography*/}
+        {/*      variant="body2"*/}
+        {/*      color="textSecondary"*/}
+        {/*    >*/}
+        {/*      Your tier:*/}
+        {/*      {' '}*/}
+        {/*      <Link*/}
+        {/*        component={RouterLink}*/}
+        {/*        to="/pricing"*/}
+        {/*      >*/}
+        {/*        {user.tier}*/}
+        {/*      </Link>*/}
+        {/*    </Typography>*/}
+        {/*  </Box>*/}
+        {/*</Box>*/}
         <Divider />
         <Box p={2}>
           {sections.map((section) => (

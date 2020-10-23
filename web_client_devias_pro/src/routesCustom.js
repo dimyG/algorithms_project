@@ -60,7 +60,9 @@ const routes = [
   },
   {
     path: '*',
-    guard: AuthGuard,
+    // guard: AuthGuard,
+    // Notice that I have commented out the parts of TopBar and Navbar (rendered by the DashboardLayout) that use a user
+    // this way even unauthenticated users can view the DashboardLayout 
     layout: DashboardLayout,
     routes: [
       {

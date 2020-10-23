@@ -72,9 +72,9 @@ const TopBar = ({
         <Contacts />
         <Notifications />
         <Settings />
-        <Box ml={2}>
-          <Account />
-        </Box>
+        {/*<Box ml={2}>*/}
+        {/*  <Account />*/}
+        {/*</Box>*/}
       </Toolbar>
     </AppBar>
   );
