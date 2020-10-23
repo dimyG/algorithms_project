@@ -7,7 +7,9 @@ import {Formik, Form, Field, ErrorMessage, useFormik} from "formik";
 
 export const AlgorithmForm = () => {
     const dispatch = useDispatch()
-
+    // the create_error is currently necessary to be in the global store, since it takes its value from the
+    // thunk's payload creation which lies in the slice file in another file. the create_status could just be
+    // part of the local state.
     const create_status = useSelector(state => state.algorithms.create_status)
     const create_error = useSelector(state => state.algorithms.create_error)
 
@@ -26,7 +28,7 @@ export const AlgorithmForm = () => {
         // in case of error, the thunk returns a resolved promise with a rejected action object
         console.log('values', values, 'csrf_token', csrf_token)
         await dispatch(createAlgorithm({'name': values.name, 'csrf_token': csrf_token}))
-        // we don't use the try catch here. We use it inside the createAlgorithm payload creator so that we get the
+        // we don't use the try catch here. We use it inside the createAlgorithm's payload creator so that we get the
         // server generated message
         // try{
         //     const create_result = await dispatch(createAlgorithm({'name': name, 'csrf_token': csrf_token}))
@@ -120,7 +122,8 @@ export const AlgorithmForm = () => {
                         {/*/>*/}
                         <ErrorMessage name="name" />
                         {/* if you copy the validation logic for a field in the front end, the backend generated
-                        error message would never be returned since the error will be caught in the front end */}
+                        error message would never be returned since the error will be caught in the front end
+                        but I add the NameError tag that shows back end generated name errors just in case */}
                         <NameError error={error}/>
                         {/*{formik.touched.name && formik.errors.name ? (*/}
                         {/*     <div>{formik.errors.name}</div>*/}

@@ -29,7 +29,11 @@ export const createAlgorithm = createAsyncThunk('algorithms/create', async ({nam
   }catch (error) {
     console.log('createAlgorithm error:', error, 'error.response:', error.response, 'error.response.data', error.response.data)
     // error.response is an object with config, data, headers, request, status and statusText attributes
-    return rejectWithValue(error.response.data)
+    const forbidden_msg = "Your request was forbidden"
+    let error_payload
+    // in case of 403, for example csrf error, then return the given message instead of the error data which is an html page
+    error.response.status === 403 ? error_payload = forbidden_msg : error_payload = error.response.data
+    return rejectWithValue(error_payload)
   }
     // this is a stackoverflow answer for handling django validation error's and more. An equivalent
     // approach could be used with the async/await syntax instead of .then and the use of rejectWithValue
