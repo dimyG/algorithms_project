@@ -1,7 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios'
 
-
 export const getAlgorithms = createAsyncThunk('algorithms/get', async () => {
   const response = await axios.get('/algorithms/')
   console.log('getAlgorithms response:', response)
@@ -24,14 +23,15 @@ export const createAlgorithm = createAsyncThunk('algorithms/create', async ({nam
   const config = {headers: {'X-CSRFToken': csrf_token}}
   try{
     const response = await axios.post('/algorithms/', body, config)
-    console.log('createAlgorithm response:', response)
+    // console.log('createAlgorithm response:', response)
     return response.data
   }catch (error) {
-    console.log('createAlgorithm error:', error, 'error.response:', error.response, 'error.response.data', error.response.data)
+    // console.log('createAlgorithm error:', error, 'error.response:', error.response, 'error.response.data', error.response.data)
     // error.response is an object with config, data, headers, request, status and statusText attributes
+
+    // in case of 403, for example csrf error, then return the given message instead of the error data which is an html page
     const forbidden_msg = "Your request was forbidden"
     let error_payload
-    // in case of 403, for example csrf error, then return the given message instead of the error data which is an html page
     error.response.status === 403 ? error_payload = forbidden_msg : error_payload = error.response.data
     return rejectWithValue(error_payload)
   }

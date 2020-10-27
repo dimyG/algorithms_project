@@ -16,6 +16,8 @@ import LoadingScreen from 'src/components/LoadingScreen';
 import AuthGuard from 'src/components/AuthGuard';
 import GuestGuard from 'src/components/GuestGuard';
 import HomePageCustom from "./homePageCustom";
+import AlgorithmsForm from "./features/algorithms/AlgorithmsForm";
+import AlgorithmsListView from "./features/algorithms/AlgorithmsListView";
 
 export const renderRoutes = (routes = []) => (
   <Suspense fallback={<LoadingScreen />}>
@@ -58,17 +60,33 @@ const routes = [
     path: '/login',
     component: lazy(() => import('src/views/auth/LoginView'))
   },
+    {
+    path: '/algorithms',
+    layout: DashboardLayout,
+    routes: [
+      {
+        exact: true,
+        path: '/algorithms',
+        component: AlgorithmsListView
+      },
+      {
+        exact: true,
+        path: '/algorithms/create',
+        component: AlgorithmsForm
+      }
+    ]
+  },
   {
     path: '*',
     // guard: AuthGuard,
-    // Notice that I have commented out the parts of TopBar and Navbar (rendered by the DashboardLayout) that use a user
-    // this way even unauthenticated users can view the DashboardLayout 
+    // todo Notice that I have commented out the parts of TopBar and Navbar (rendered by the DashboardLayout) that use a user.
+    // this way even unauthenticated users can view the DashboardLayout. Re-enable them when you implement authentication
     layout: DashboardLayout,
     routes: [
       {
         exact: true,
         path: '/',
-        component: HomePageCustom
+        component: AlgorithmsListView
       },
       {
         component: () => <Redirect to="/404" />

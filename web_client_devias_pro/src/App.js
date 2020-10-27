@@ -8,7 +8,8 @@ import { SnackbarProvider } from 'notistack';
 import {
   jssPreset,
   StylesProvider,
-  ThemeProvider
+  ThemeProvider,
+  Button
 } from '@material-ui/core';
 import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 import GlobalStyles from 'src/components/GlobalStyles';
@@ -34,6 +35,13 @@ const App = () => {
     theme: settings.theme
   });
 
+  // add action to all snackbars
+  const notistackRef = React.createRef();
+  const onClickDismiss = key => () => {
+      notistackRef.current.closeSnackbar(key);
+  }
+
+
   return (
     <ThemeProvider theme={theme}>
       <StylesProvider jss={jss}>
@@ -41,6 +49,16 @@ const App = () => {
           <SnackbarProvider
             dense
             maxSnack={3}
+            anchorOrigin={{
+              vertical: 'top',
+              horizontal: 'center',
+            }}
+            ref={notistackRef}
+            action={(key) => (
+                <Button onClick={onClickDismiss(key)}>
+                    X
+                </Button>
+            )}
           >
             <Csrf/>
             <Router history={history}>

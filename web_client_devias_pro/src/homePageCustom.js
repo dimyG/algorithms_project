@@ -1,13 +1,11 @@
 import React from 'react';
-import {AlgorithmsList} from 'src/features/algorithms/AlgorithmsList'
-import {AlgorithmForm} from 'src/features/algorithms/AlgorithmForm';
+import Page from 'src/components/Page'
 
 const HomePageCustom = () => {
     return(
-        <div>
-            <AlgorithmsList/>
-            <AlgorithmForm/>
-        </div>
+        <Page title={"Algorithms Home Page"}>
+
+        </Page>
     )
 }
 
