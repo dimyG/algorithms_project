@@ -9,10 +9,20 @@ async function long(){
   return i
 }
 
-export const getAlgorithmsThunk = createAsyncThunk('algorithms/get', async () => {
-  const response = await axios.get('/algorithms/')
-  console.log('getAlgorithmsThunk response:', response)
-  return response.data
+// Have in mind:
+// payloadCreator is a callback function that should return a promise containing the result of some asynchronous logic.
+// It may also return a value synchronously. If there is an error, it should either return a rejected promise
+// containing an Error instance or a plain value such as a descriptive error message or otherwise a resolved promise
+// with a RejectWithValue argument as returned by the thunkAPI.rejectWithValue function.
+export const getAlgorithmsThunk = createAsyncThunk('algorithms/get', async (dummy, {rejectWithValue}) => {
+  try {
+    const response = await axios.get('/algorithms/')
+    // console.log('getAlgorithmsThunk response:', response)
+    return response.data
+  }catch (error) {
+    // console.log('getAlgorithmsThunk error', JSON.stringify(error))
+    return rejectWithValue(error.message)
+  }
 })
 
 export const createAlgorithmThunk = createAsyncThunk('algorithms/create', async ({name, csrf_token}, {rejectWithValue}) => {
@@ -87,6 +97,7 @@ export const algorithmsSlice = createSlice({
     [getAlgorithmsThunk.rejected]: (state, action) => {
       state.get.status = 'failed'
       state.get.error = action.error.message
+      state.get.error = action.payload
     },
     [createAlgorithmThunk.pending]: (state, action) => {
       state.create.status = 'loading'
