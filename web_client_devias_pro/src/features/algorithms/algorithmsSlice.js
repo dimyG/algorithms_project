@@ -1,7 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios'
 
-
 async function long(){
   console.log('running long task...')
   let i=0

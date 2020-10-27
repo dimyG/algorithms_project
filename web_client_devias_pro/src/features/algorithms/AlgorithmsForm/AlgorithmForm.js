@@ -27,29 +27,33 @@ const AlgorithmForm = () => {
     // part of the local state.
     const create_status = useSelector(state => createStatusSelector(state))
     const create_error = useSelector(state => createErrorSelector(state))
+    // const create_status = useSelector(state => state.algorithms.create_status)
+    // const create_error = useSelector(state => state.algorithms.create_error)
     const csrf_token = useSelector(state => csrfSelector(state))
     const { enqueueSnackbar, closeSnackbar} = useSnackbar()
+    const [ numCalls, setNumCalls ] = useState(0)
 
-    const showBackendError = () => {
-      // show back end generated errors in a Snackbar
-      if (create_status === 'failed') {
-        if (create_error && create_error.name) {
+    // show back end generated errors in a Snackbar
+    const showBackendError = (status, error) => {
+      if (status === 'failed') {
+        if (error && error.name) {
           enqueueSnackbar(
-            create_error.name, {variant: 'error'}
+            error.name, {variant: 'error'}
           )
         } else {
-          enqueueSnackbar(create_error, {variant: 'error'})
+          enqueueSnackbar(error, {variant: 'error'})
         }
-      } else if (create_status === 'succeeded') {
+      } else if (status === 'succeeded') {
         enqueueSnackbar("Algorithm created successfully", {variant: "success"})
       }
     }
 
     useEffect( () => {
-        // show back end generated errors in a Snackbar when the create_status changes which ensures that the effect
-        // only runs when the form is submitted. when submitted it becomes pending before becoming succeeded or failed
-        showBackendError()
-      }, [create_status]
+        // show back end generated errors only after a call (when the number of calls changes). Do not show it
+        // if it is 0 (0 means that the component has just rendered)
+        // todo running the effect when the create_status changes instead of the numCalls doesn't work as expected. Why?
+        if (numCalls > 0) showBackendError(create_status, create_error)
+      }, [numCalls]
     )
 
     // you only need to make the onCreatePressed async if you want to await the thunk.
@@ -89,6 +93,7 @@ const AlgorithmForm = () => {
                 await onCreatePressed(values)
                 // isSubmitting must be set to false after the onCreatePressed returns a resolved promise
                 setSubmitting(false)
+                setNumCalls(numCalls + 1)
             }}
         >
             { formik => (

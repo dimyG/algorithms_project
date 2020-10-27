@@ -15,6 +15,7 @@ import Header from './Header';
 import Results from './Results';
 import {useSelector, useDispatch} from "react-redux";
 import {getAlgorithmsThunk, getStatusSelector, getErrorSelector, algorithmsSelector } from "../algorithmsSlice";
+import { useSnackbar } from 'notistack'
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -33,12 +34,30 @@ const AlgorithmsListView = () => {
   const get_status = useSelector(state => getStatusSelector(state))
   const get_error = useSelector(state => getErrorSelector(state))
   const algorithms = useSelector(state => algorithmsSelector(state))
+  const { enqueueSnackbar, closeSnackbar} = useSnackbar()
+  const [numCalls, setNumCalls] = useState(0)
+
+  // update the numCalls only when the get thunk completes its execution
+  const get = async () => {
+    await dispatch(getAlgorithmsThunk())
+    setNumCalls(numCalls + 1)
+  }
 
   useEffect(() => {
-      if (get_status === 'idle'){
-          dispatch(getAlgorithmsThunk())
-      }
+    // getting the items on 'idle' means getting them only the first time the component renders
+    // This means that you need to reload the page to make a new get call.
+    if (get_status === 'idle') {
+      const promise = get()
+    }
   })
+
+  useEffect(() => {
+    if (numCalls > 0) {
+      if (get_status === 'failed' && get_error) {
+        enqueueSnackbar(get_error, {variant: 'error'})
+      }
+    }
+  }, [numCalls])
 
   // const getOrders = useCallback(async () => {
   //   try {
@@ -71,4 +90,4 @@ const AlgorithmsListView = () => {
   );
 };
 
-export default AlgorithmsListView;
+export default AlgorithmsListView
