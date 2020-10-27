@@ -4,7 +4,7 @@ import axios from 'axios'
 
 export const getAlgorithms = createAsyncThunk('algorithms/get', async () => {
   const response = await axios.get('/algorithms/')
-  console.log('getAlgorithms response:', response)
+  console.log('getAlgorithmsThunk response:', response)
   return response.data
 })
 
@@ -24,10 +24,10 @@ export const createAlgorithm = createAsyncThunk('algorithms/create', async ({nam
   const config = {headers: {'X-CSRFToken': csrf_token}}
   try{
     const response = await axios.post('/algorithms/', body, config)
-    console.log('createAlgorithm response:', response)
+    console.log('createAlgorithmThunk response:', response)
     return response.data
   }catch (error) {
-    console.log('createAlgorithm error:', error, 'error.response:', error.response, 'error.response.data', error.response.data)
+    console.log('createAlgorithmThunk error:', error, 'error.response:', error.response, 'error.response.data', error.response.data)
     // error.response is an object with config, data, headers, request, status and statusText attributes
     return rejectWithValue(error.response.data)
   }
@@ -35,7 +35,7 @@ export const createAlgorithm = createAsyncThunk('algorithms/create', async ({nam
     // approach could be used with the async/await syntax instead of .then and the use of rejectWithValue
     // axios.post('/algorithms/', body, config)
     // .then(response => {
-    //   console.log('createAlgorithm response', response)
+    //   console.log('createAlgorithmThunk response', response)
     //   return (response.data)
     // })
     // .catch(function (error) {

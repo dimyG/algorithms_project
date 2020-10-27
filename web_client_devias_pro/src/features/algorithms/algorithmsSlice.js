@@ -1,11 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios'
 
-export const getAlgorithms = createAsyncThunk('algorithms/get', async () => {
-  const response = await axios.get('/algorithms/')
-  console.log('getAlgorithms response:', response)
-  return response.data
-})
 
 async function long(){
   console.log('running long task...')
@@ -15,7 +10,13 @@ async function long(){
   return i
 }
 
-export const createAlgorithm = createAsyncThunk('algorithms/create', async ({name, csrf_token}, {rejectWithValue}) => {
+export const getAlgorithmsThunk = createAsyncThunk('algorithms/get', async () => {
+  const response = await axios.get('/algorithms/')
+  console.log('getAlgorithmsThunk response:', response)
+  return response.data
+})
+
+export const createAlgorithmThunk = createAsyncThunk('algorithms/create', async ({name, csrf_token}, {rejectWithValue}) => {
   // const long_result = await long()
   // console.log('long_result: ', long_result)
   const body = {'name': name}
@@ -23,10 +24,10 @@ export const createAlgorithm = createAsyncThunk('algorithms/create', async ({nam
   const config = {headers: {'X-CSRFToken': csrf_token}}
   try{
     const response = await axios.post('/algorithms/', body, config)
-    // console.log('createAlgorithm response:', response)
+    // console.log('createAlgorithmThunk response:', response)
     return response.data
   }catch (error) {
-    // console.log('createAlgorithm error:', error, 'error.response:', error.response, 'error.response.data', error.response.data)
+    // console.log('createAlgorithmThunk error:', error, 'error.response:', error.response, 'error.response.data', error.response.data)
     // error.response is an object with config, data, headers, request, status and statusText attributes
 
     // in case of 403, for example csrf error, then return the given message instead of the error data which is an html page
@@ -39,7 +40,7 @@ export const createAlgorithm = createAsyncThunk('algorithms/create', async ({nam
     // approach could be used with the async/await syntax instead of .then and the use of rejectWithValue
     // axios.post('/algorithms/', body, config)
     // .then(response => {
-    //   console.log('createAlgorithm response', response)
+    //   console.log('createAlgorithmThunk response', response)
     //   return (response.data)
     // })
     // .catch(function (error) {
@@ -65,39 +66,49 @@ export const createAlgorithm = createAsyncThunk('algorithms/create', async ({nam
 export const algorithmsSlice = createSlice({
   name: 'algorithms',
   initialState: {
-    get_status: 'idle',
-    get_error: '',
-    create_status: 'idle',
-    create_error: '',
+    get: {
+      status: 'idle',
+      error: ''
+    },
+    create: {
+      status: 'idle',
+      error: ''
+    },
     list: [],
   },
   reducers: {},
   extraReducers: {
-    [getAlgorithms.pending]: (state, action) => {
-      state.get_status = 'loading'
+    [getAlgorithmsThunk.pending]: (state, action) => {
+      state.get.status = 'loading'
     },
-    [getAlgorithms.fulfilled]: (state, action) => {
-      state.get_status = 'succeeded'
+    [getAlgorithmsThunk.fulfilled]: (state, action) => {
+      state.get.status = 'succeeded'
       state.list = state.list.concat(action.payload)
     },
-    [getAlgorithms.rejected]: (state, action) => {
-      state.get_status = 'failed'
-      state.get_error = action.error.message
+    [getAlgorithmsThunk.rejected]: (state, action) => {
+      state.get.status = 'failed'
+      state.get.error = action.error.message
     },
-    [createAlgorithm.pending]: (state, action) => {
-      state.create_status = 'loading'
+    [createAlgorithmThunk.pending]: (state, action) => {
+      state.create.status = 'loading'
     },
-    [createAlgorithm.fulfilled]: (state, action) => {
-      state.create_status = 'succeeded'
+    [createAlgorithmThunk.fulfilled]: (state, action) => {
+      state.create.status = 'succeeded'
       state.list.push(action.payload)
     },
-    [createAlgorithm.rejected]: (state, action) => {
-      state.create_status = 'failed'
-      // state.create_error = action.error.message
+    [createAlgorithmThunk.rejected]: (state, action) => {
+      state.create.status = 'failed'
+      // state.create.error = action.error.message
       // return rejectWithValue(errorPayload) causes the rejected action to use the errorPayload value as action.payload
-      state.create_error = action.payload
+      state.create.error = action.payload
     },
   }
 })
+
+export const algorithmsSelector = state => state.algorithms.list
+export const getErrorSelector = state => state.algorithms.get.error
+export const getStatusSelector = state => state.algorithms.get.status
+export const createErrorSelector = state => state.algorithms.create.error
+export const createStatusSelector = state => state.algorithms.create.status
 
 export default algorithmsSlice.reducer

@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
-import {createAlgorithm} from "../algorithmsSlice";
+import {createAlgorithmThunk, createErrorSelector, createStatusSelector} from "../algorithmsSlice";
 import {csrfSelector} from "../../csrf/csrfSlice";
 import {Formik, Form, Field, ErrorMessage, useFormik} from "formik";
 import Page from 'src/components/Page'
@@ -25,8 +25,8 @@ const AlgorithmForm = () => {
     // the create_error is currently necessary to be in the global store, since it takes its value from the
     // thunk's payload creation which lies in the slice file (in another file). the create_status could just be
     // part of the local state.
-    const create_status = useSelector(state => state.algorithms.create_status)
-    const create_error = useSelector(state => state.algorithms.create_error)
+    const create_status = useSelector(state => createStatusSelector(state))
+    const create_error = useSelector(state => createErrorSelector(state))
     const csrf_token = useSelector(state => csrfSelector(state))
     const { enqueueSnackbar, closeSnackbar} = useSnackbar()
 
@@ -58,11 +58,11 @@ const AlgorithmForm = () => {
         // in case of no error the thunk returns a resolved promise with a fulfilled action object
         // in case of error, the thunk returns a resolved promise with a rejected action object
         console.log('values', values, 'csrf_token', csrf_token)
-        await dispatch(createAlgorithm({'name': values.name, 'csrf_token': csrf_token}))
-        // we don't use the try catch here. We use it inside the createAlgorithm's payload creator so that we get the
+        await dispatch(createAlgorithmThunk({'name': values.name, 'csrf_token': csrf_token}))
+        // we don't use the try catch here. We use it inside the createAlgorithmThunk's payload creator so that we get the
         // server generated message
         // try{
-        //     const create_result = await dispatch(createAlgorithm({'name': name, 'csrf_token': csrf_token}))
+        //     const create_result = await dispatch(createAlgorithmThunk({'name': name, 'csrf_token': csrf_token}))
         //     unwrapResult(create_result)
         //     setName('')
         // }catch (error){

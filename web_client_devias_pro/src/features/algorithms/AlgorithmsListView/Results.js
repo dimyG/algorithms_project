@@ -68,7 +68,7 @@ const useStyles = makeStyles(() => ({
   root: {}
 }));
 
-const Results = ({ className, orders, ...rest }) => {
+const Results = ({ className, items, ...rest }) => {
   const classes = useStyles();
   const [selectedOrders, setSelectedOrders] = useState([]);
   const [page, setPage] = useState(0);
@@ -76,7 +76,7 @@ const Results = ({ className, orders, ...rest }) => {
 
   const handleSelectAllOrders = (event) => {
     setSelectedOrders(event.target.checked
-      ? orders.map((order) => order.id)
+      ? items.map((order) => order.id)
       : []);
   };
 
@@ -96,10 +96,10 @@ const Results = ({ className, orders, ...rest }) => {
     setLimit(parseInt(event.target.value));
   };
 
-  const paginatedOrders = applyPagination(orders, page, limit);
+  const paginatedOrders = applyPagination(items, page, limit);
   const enableBulkOperations = selectedOrders.length > 0;
-  const selectedSomeOrders = selectedOrders.length > 0 && selectedOrders.length < orders.length;
-  const selectedAllOrders = selectedOrders.length === orders.length;
+  const selectedSomeOrders = selectedOrders.length > 0 && selectedOrders.length < items.length;
+  const selectedAllOrders = selectedOrders.length === items.length;
 
   return (
     <div
@@ -194,7 +194,7 @@ const Results = ({ className, orders, ...rest }) => {
                         </IconButton>
                         {/*<IconButton*/}
                         {/*  component={RouterLink}*/}
-                        {/*  to="/app/management/orders/1"*/}
+                        {/*  to="/app/management/items/1"*/}
                         {/*>*/}
                         {/*  <SvgIcon fontSize="small">*/}
                         {/*    <ArrowRightIcon />*/}
@@ -210,7 +210,7 @@ const Results = ({ className, orders, ...rest }) => {
         </PerfectScrollbar>
         <TablePagination
           component="div"
-          count={orders.length}
+          count={items.length}
           onChangePage={handlePageChange}
           onChangeRowsPerPage={handleLimitChange}
           page={page}
@@ -223,7 +223,7 @@ const Results = ({ className, orders, ...rest }) => {
         gutterBottom
         variant="body2"
       >
-        {orders.length}
+        {items.length}
         {' '}
         Records found. Page
         {' '}
@@ -231,7 +231,7 @@ const Results = ({ className, orders, ...rest }) => {
         {' '}
         of
         {' '}
-        {Math.ceil(orders.length / limit)}
+        {Math.ceil(items.length / limit)}
       </Typography>
       <BulkOperations
         open={enableBulkOperations}

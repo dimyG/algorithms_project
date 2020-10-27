@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import {useSelector, useDispatch} from "react-redux";
-import {getAlgorithms} from "./algorithmsSlice";
+import {getAlgorithmsThunk} from "./algorithmsSlice";
 
 export const AlgorithmsList = () => {
     const dispatch = useDispatch()
@@ -10,7 +10,7 @@ export const AlgorithmsList = () => {
 
     useEffect(() => {
         if (get_status === 'idle'){
-            dispatch(getAlgorithms())
+            dispatch(getAlgorithmsThunk())
         }
     })
 

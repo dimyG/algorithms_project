@@ -14,7 +14,7 @@ import Page from 'src/components/Page';
 import Header from './Header';
 import Results from './Results';
 import {useSelector, useDispatch} from "react-redux";
-import {getAlgorithms} from "../algorithmsSlice";
+import {getAlgorithmsThunk, getStatusSelector, getErrorSelector, algorithmsSelector } from "../algorithmsSlice";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -30,13 +30,13 @@ const AlgorithmsListView = () => {
   const dispatch = useDispatch()
   // const isMountedRef = useIsMountedRef();
   // const [orders, setOrders] = useState([]);
-  const get_status = useSelector(state => state.algorithms.get_status)
-  const get_error = useSelector(state => state.algorithms.get_error)
-  const algorithms = useSelector(state => state.algorithms.list)
+  const get_status = useSelector(state => getStatusSelector(state))
+  const get_error = useSelector(state => getErrorSelector(state))
+  const algorithms = useSelector(state => algorithmsSelector(state))
 
   useEffect(() => {
       if (get_status === 'idle'){
-          dispatch(getAlgorithms())
+          dispatch(getAlgorithmsThunk())
       }
   })
 
@@ -64,7 +64,7 @@ const AlgorithmsListView = () => {
       <Container maxWidth={false}>
         <Header />
         <Box mt={3}>
-          <Results orders={algorithms} />
+          <Results items={algorithms} />
         </Box>
       </Container>
     </Page>

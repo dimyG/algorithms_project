@@ -25,10 +25,10 @@ export const AlgorithmForm = () => {
         // in case of no error the thunk returns a resolved promise with a fulfilled action object
         // in case of error, the thunk returns a resolved promise with a rejected action object
         await dispatch(createAlgorithm({'name': values.name, 'csrf_token': csrf_token}))
-        // we don't use the try catch here. We use it inside the createAlgorithm payload creator so that we get the
+        // we don't use the try catch here. We use it inside the createAlgorithmThunk payload creator so that we get the
         // server generated message
         // try{
-        //     const create_result = await dispatch(createAlgorithm({'name': name, 'csrf_token': csrf_token}))
+        //     const create_result = await dispatch(createAlgorithmThunk({'name': name, 'csrf_token': csrf_token}))
         //     unwrapResult(create_result)
         //     setName('')
         // }catch (error){
