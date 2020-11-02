@@ -16,7 +16,7 @@ import LoadingScreen from 'src/components/LoadingScreen';
 import AuthGuard from 'src/components/AuthGuard';
 import GuestGuard from 'src/components/GuestGuard';
 import HomePageCustom from "./homePageCustom";
-import AlgorithmsForm from "./features/algorithms/AlgorithmsForm";
+import AlgorithmCreateUpdate from "./features/algorithms/AlgorithmCreateUpdate";
 import AlgorithmsListView from "./features/algorithms/AlgorithmsListView";
 
 export const renderRoutes = (routes = []) => (
@@ -72,7 +72,12 @@ const routes = [
       {
         exact: true,
         path: '/algorithms/create',
-        component: AlgorithmsForm
+        component: AlgorithmCreateUpdate
+      },
+      {
+        exact: true,
+        path: '/algorithms/:algorithmId',
+        component: AlgorithmCreateUpdate
       }
     ]
   },

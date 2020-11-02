@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios'
+import _ from 'lodash'
 
 async function long(){
   console.log('running long task...')
@@ -25,12 +26,12 @@ export const getAlgorithmsThunk = createAsyncThunk('algorithms/get', async (dumm
   }
 })
 
-export const createAlgorithmThunk = createAsyncThunk('algorithms/create', async ({name, csrf_token}, {rejectWithValue}) => {
+export const createAlgorithmThunk = createAsyncThunk('algorithms/create', async ({name, csrfToken}, {rejectWithValue}) => {
   // const long_result = await long()
   // console.log('long_result: ', long_result)
   const body = {'name': name}
   // have in mind that when using session authentication backend csrf token is only necessary for authenticated requests
-  const config = {headers: {'X-CSRFToken': csrf_token}}
+  const config = {headers: {'X-CSRFToken': csrfToken}}
   try{
     const response = await axios.post('/algorithms/', body, config)
     // console.log('createAlgorithmThunk response:', response)
@@ -72,9 +73,39 @@ export const createAlgorithmThunk = createAsyncThunk('algorithms/create', async 
     // });
 })
 
+export const updateAlgorithmThunk = createAsyncThunk("algorithms/update", async ({id, name, csrfToken}, {rejectWithValue}) => {
+  const body = {'id': id, 'name': name}
+  const config = {headers: {'X-CSRFToken': csrfToken}}
+  try {
+    // the trailing slash is needed by django in PUT requests
+    const response = await axios.put(`/algorithms/${id}/`, body, config)
+    console.log("edit algorithm thunk response:", response)
+    return response.data
+  } catch (error) {
+    console.log("edit algorithm thunk error:", JSON.stringify(error))
+    return rejectWithValue(error.message)
+  }
+})
+
+export const getAlgorithmThunk = createAsyncThunk("algorithm/get", async ({id}, {rejectWithValue}) => {
+  const body = {'id': id}
+  try {
+    const response = await axios.get(`/algorithms/${id}`, body)
+    console.log("get algorithm thunk response:", response)
+    return response.data
+  } catch (error) {
+    console.log("get algorithm thunk error:", JSON.stringify(error))
+    return rejectWithValue(error.message)
+  }
+})
+
 export const algorithmsSlice = createSlice({
   name: 'algorithms',
   initialState: {
+    get_all: {
+      status: 'idle',
+      error: ''
+    },
     get: {
       status: 'idle',
       error: ''
@@ -83,22 +114,45 @@ export const algorithmsSlice = createSlice({
       status: 'idle',
       error: ''
     },
+    update: {
+      status: 'idle',
+      error: ''
+    },
     list: [],
   },
   reducers: {},
   extraReducers: {
     [getAlgorithmsThunk.pending]: (state, action) => {
-      state.get.status = 'loading'
+      state.get_all.status = 'loading'
     },
     [getAlgorithmsThunk.fulfilled]: (state, action) => {
-      state.get.status = 'succeeded'
-      state.list = state.list.concat(action.payload)
+      state.get_all.status = 'succeeded'
+      // state.list = _.union(state.list, action.payload)
+      state.list = action.payload
     },
     [getAlgorithmsThunk.rejected]: (state, action) => {
+      state.get_all.status = 'failed'
+      state.get_all.error = action.payload
+    },
+
+    [getAlgorithmThunk.pending]: (state, action) => {
+      state.get.status = 'loading'
+    },
+    [getAlgorithmThunk.fulfilled]: (state, action) => {
+      state.get.status = 'succeeded'
+      // if the algorithm exist in the store update it with the latest server data, else add it
+      const algorithmIndex = state.list.indexOf(action.payload)
+      if (algorithmIndex > -1){
+        state.list[algorithmIndex] = action.payload
+      }else{
+        state.list.push(action.payload)
+      }
+    },
+    [getAlgorithmThunk.rejected]: (state, action) => {
       state.get.status = 'failed'
-      state.get.error = action.error.message
       state.get.error = action.payload
     },
+
     [createAlgorithmThunk.pending]: (state, action) => {
       state.create.status = 'loading'
     },
@@ -112,10 +166,27 @@ export const algorithmsSlice = createSlice({
       // return rejectWithValue(errorPayload) causes the rejected action to use the errorPayload value as action.payload
       state.create.error = action.payload
     },
+    [updateAlgorithmThunk.pending]: (state, action) => {
+      state.update.status = 'loading'
+    },
+    [updateAlgorithmThunk.fulfilled]: (state, action) => {
+      state.update.status = 'succeeded'
+      state.list.map((algorithm, index, list_ref) => {
+        if (algorithm.id === action.payload.id){
+          list_ref[index] = action.payload
+        }
+      })
+    },
+    [updateAlgorithmThunk.rejected]: (state, action) => {
+      state.update.status = 'failed'
+      state.update.error = action.payload
+    },
   }
 })
 
 export const algorithmsSelector = state => state.algorithms.list
+export const getAllErrorSelector = state => state.algorithms.get_all.error
+export const getAllStatusSelector = state => state.algorithms.get_all.status
 export const getErrorSelector = state => state.algorithms.get.error
 export const getStatusSelector = state => state.algorithms.get.status
 export const createErrorSelector = state => state.algorithms.create.error

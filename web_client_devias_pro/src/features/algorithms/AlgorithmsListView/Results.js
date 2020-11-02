@@ -20,7 +20,7 @@ import {
   TablePagination,
   TableRow,
   Typography,
-  makeStyles
+  makeStyles, Button, CircularProgress, CardContent
 } from '@material-ui/core';
 import {
   Edit as EditIcon,
@@ -30,6 +30,9 @@ import {
 import Label from 'src/components/Label';
 import GenericMoreButton from 'src/components/GenericMoreButton';
 import BulkOperations from './BulkOperations';
+import {useSelector} from "react-redux";
+import {getAllStatusSelector} from "../algorithmsSlice";
+import BoxedCircularProgress from "../../../components/BoxedCircularProgress";
 
 const getStatusLabel = (paymentStatus) => {
   const map = {
@@ -73,6 +76,7 @@ const Results = ({ className, items, ...rest }) => {
   const [selectedOrders, setSelectedOrders] = useState([]);
   const [page, setPage] = useState(0);
   const [limit, setLimit] = useState(10);
+  const getAllStatus = useSelector(state => getAllStatusSelector(state))
 
   const handleSelectAllOrders = (event) => {
     setSelectedOrders(event.target.checked
@@ -114,6 +118,9 @@ const Results = ({ className, items, ...rest }) => {
         <Divider />
         <PerfectScrollbar>
           <Box minWidth={350}>
+            {getAllStatus === "loading" ? (
+              <BoxedCircularProgress/>
+              ) : (
             <Table>
               <TableHead>
                 <TableRow>
@@ -182,12 +189,17 @@ const Results = ({ className, items, ...rest }) => {
                       {/*  {getStatusLabel(order.status)}*/}
                       {/*</TableCell>*/}
                       <TableCell align="right">
-                        <IconButton>
+                        <IconButton
+                          component={RouterLink}
+                          to={"/algorithms/"+order.id}
+                        >
                           <SvgIcon fontSize="small">
                             <EditIcon />
                           </SvgIcon>
                         </IconButton>
-                        <IconButton>
+                        <IconButton
+                          onClick={() => {alert("delete pressed")}}
+                        >
                           <SvgIcon fontSize="small">
                             <DeleteIcon />
                           </SvgIcon>
@@ -206,6 +218,7 @@ const Results = ({ className, items, ...rest }) => {
                 })}
               </TableBody>
             </Table>
+              )}
           </Box>
         </PerfectScrollbar>
         <TablePagination

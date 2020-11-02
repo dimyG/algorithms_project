@@ -5,6 +5,7 @@ from .serializers import AlgorithmSerializer
 from django.views.decorators.csrf import csrf_protect
 from django.utils.decorators import method_decorator
 from django.template.response import TemplateResponse
+import time
 
 
 class AlgorithmMixin(object):
@@ -21,7 +22,13 @@ class AlgorithmViewSet(AlgorithmMixin, viewsets.ModelViewSet):
 
     def list(self, request, *args, **kwargs):
         response = super(AlgorithmViewSet, self).list(request, *args, **kwargs)
+        time.sleep(0.5)
         response.set_cookie('test', 'test_value')
+        return response
+
+    def retrieve(self, request, *args, **kwargs):
+        response = super(AlgorithmViewSet, self).retrieve(request, *args, **kwargs)
+        time.sleep(0.5)
         return response
 
 

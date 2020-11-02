@@ -1,17 +1,13 @@
 import React from 'react';
-import { Link as RouterLink } from 'react-router-dom';
 import {
   Box,
-  Breadcrumbs,
   Container,
   Grid,
-  Link,
-  Typography,
   makeStyles
 } from '@material-ui/core';
-import NavigateNextIcon from '@material-ui/icons/NavigateNext';
 import Page from 'src/components/Page';
 import AlgorithmForm from "./AlgorithmForm";
+import GetAlgorithms from "./GetAlgorithms";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -22,8 +18,12 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-const FormikView = () => {
+const CreateUpdateForm = ({match}) => {
   const classes = useStyles();
+  const { algorithmId } = match.params;
+  const isAddMode = !algorithmId;
+
+  console.log("match: ", match, "isAdd mode: ", isAddMode, "algorithmId", algorithmId)
 
   return (
     <Page
@@ -61,9 +61,8 @@ const FormikView = () => {
             <Grid
               item
               xs={12}
-              // md={6}
             >
-              <AlgorithmForm />
+              <AlgorithmForm isAddMode={isAddMode} algorithmId={algorithmId} />
             </Grid>
           </Grid>
         </Box>
@@ -72,4 +71,4 @@ const FormikView = () => {
   );
 };
 
-export default FormikView;
+export default CreateUpdateForm;
