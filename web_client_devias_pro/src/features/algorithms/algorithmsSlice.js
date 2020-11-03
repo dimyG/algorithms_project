@@ -192,5 +192,7 @@ export const getErrorSelector = state => state.algorithms.get.error
 export const getStatusSelector = state => state.algorithms.get.status
 export const createErrorSelector = state => state.algorithms.create.error
 export const createStatusSelector = state => state.algorithms.create.status
+export const updateStatusSelector = state => state.algorithms.update.status
+export const updateErrorSelector = state => state.algorithms.update.error
 
 export default algorithmsSlice.reducer

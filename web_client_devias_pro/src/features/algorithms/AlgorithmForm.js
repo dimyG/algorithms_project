@@ -5,7 +5,7 @@ import {
   createAlgorithmThunk,
   createErrorSelector,
   createStatusSelector,
-  getAlgorithmThunk, getStatusSelector
+  getAlgorithmThunk, getErrorSelector, getStatusSelector, updateErrorSelector, updateStatusSelector
 } from "./algorithmsSlice";
 import {csrfSelector} from "../csrf/csrfSlice";
 import {Formik, Form, Field, ErrorMessage, useFormik} from "formik";
@@ -23,10 +23,8 @@ import {
   Button,
   Grid
 } from "@material-ui/core";
-import {Alert} from "@material-ui/lab";
 import { useSnackbar } from 'notistack'
 import {updateAlgorithmThunk} from "./algorithmsSlice";
-import GetAlgorithms from "./GetAlgorithms";
 import BoxedCircularProgress from "../../components/BoxedCircularProgress";
 
 const AlgorithmForm = ({isAddMode, algorithmId}) => {
@@ -34,44 +32,62 @@ const AlgorithmForm = ({isAddMode, algorithmId}) => {
   // the create_error is currently necessary to be in the global store, since it takes its value from the
   // thunk's payload creation which lies in the slice file (in another file). the create_status could just be
   // part of the local state.
-  const create_status = useSelector(state => createStatusSelector(state))
-  const create_error = useSelector(state => createErrorSelector(state))
+  const createStatus = useSelector(state => createStatusSelector(state))
+  const createError = useSelector(state => createErrorSelector(state))
   const algorithms = useSelector(state => algorithmsSelector(state))
   const getStatus = useSelector(state => getStatusSelector(state))
-  // const create_status = useSelector(state => state.algorithms.create_status)
-  // const create_error = useSelector(state => state.algorithms.create_error)
+  const getError = useSelector(state => getErrorSelector(state))
+  const updateStatus = useSelector(state => updateStatusSelector(state))
+  const updateError = useSelector(state => updateErrorSelector(state))
   const csrfToken = useSelector(state => csrfSelector(state))
   const {enqueueSnackbar, closeSnackbar} = useSnackbar()
-  const [numCalls, setNumCalls] = useState(0)
-  // const [filteredAlgorithm, setFilteredAlgorithm] = useState({id: 0, name: "dummy"})
-  // const [initialValues, setInitialValues] = useState({name: filteredAlgorithm.name})
-  const [test, setTest] = useState(0)
-
-  useEffect( () => {
-      // show back end generated errors only after a call (when the number of calls changes). Do not show it
-      // if it is 0 (0 means that the component has just rendered)
-      // todo running the effect when the create_status changes instead of the numCalls doesn't work as expected. Why?
-      if (numCalls > 0) showBackendError(create_status, create_error)
-    }, [numCalls]
-  )
+  const [callMode, setCallMode] = useState(null)
 
   useEffect(() => {
-    // if (isAddMode) return
-
-    // if we are in edit mode, fetch item data if it hasn't been fetched already (if status is "idle")
+    // if we are in edit mode, fetch item data after component mounts
     if (!isAddMode){
       dispatch(getAlgorithmThunk({'id': algorithmId}))
         .then(response => {
-          console.log("promised response", response)
+          // console.log("promised response", response)
+          // todo maybe store the fetched item in local state instead of global
+          setCallMode('get')
         })
-      // todo maybe store the fetched item in local state instead of global to make things work in a simple way?
-      // todo show errors
-      // todo show values
-    }
-  }, [])
+      }
+    }, []
+  )
 
-    // show back end generated errors in a Snackbar
-  const showBackendError = (status, error) => {
+  // Show back end errors (get, create or update) based on which one was the latest call. If the latest call was
+  // a create one, the callMode will be 'create' and the create status and error will be used.
+  // Running the effects using only the status values as dependencies doesn't work as expected
+  // because the component is mounted every time you visit its route and the effects with dependencies run
+  // after mounting, showing the latest generated message which shouldn't be shown.
+
+  useEffect( () => {
+    if (callMode === 'get'){
+      showBackendError(getStatus, getError, null)
+    }
+    }, [getStatus, getError, callMode]
+  )
+
+  useEffect( () => {
+    if (callMode === 'create') {
+      const successMessage = "Algorithm created successfully"
+      showBackendError(createStatus, createError, successMessage)
+    }
+    }, [createStatus, createError, callMode]
+  )
+
+  useEffect( () => {
+    if (callMode === 'update') {
+      const successMessage = "Algorithm updated successfully"
+      showBackendError(updateStatus, updateError, successMessage)
+    }
+    }, [updateStatus, updateError, callMode]
+  )
+
+  // show back end generated errors in a Snackbar
+  const showBackendError = (status, error, successMessage) => {
+    console.log("RUNNING BACK END ERROR FUNCTION")
     if (status === 'failed') {
       if (error && error.name) {
         enqueueSnackbar(
@@ -80,8 +96,8 @@ const AlgorithmForm = ({isAddMode, algorithmId}) => {
       } else {
         enqueueSnackbar(error, {variant: 'error'})
       }
-    } else if (status === 'succeeded') {
-      enqueueSnackbar("Algorithm created successfully", {variant: "success"})
+    } else if (status === 'succeeded' && successMessage) {
+      enqueueSnackbar(successMessage, {variant: "success"})
     }
   }
 
@@ -103,23 +119,12 @@ const AlgorithmForm = ({isAddMode, algorithmId}) => {
     return {name: getFilteredAlgorithm().name}
   }
 
-  const onSubmit = async (values, {setSubmitting}) => {
-    if (isAddMode) {
-      await onCreatePressed(values)
-    } else {
-      await onUpdatePressed(values)
-    }
-    // isSubmitting must be set to false after the onPressed returns a resolved promise
-    setSubmitting(false)
-    setNumCalls(numCalls + 1)
-  }
-
   // you only need to make the onCreatePressed async if you want to await the thunk.
   // you would want to await the thunk in order to catch any asyncThunk internal errors with the unwrapResult function
   const onCreatePressed = async (values) => {
       // in case of no error the thunk returns a resolved promise with a fulfilled action object
       // in case of error, the thunk returns a resolved promise with a rejected action object
-      console.log('values', values, 'csrf_token', csrfToken)
+      // console.log('values', values, 'csrf_token', csrfToken)
       await dispatch(createAlgorithmThunk({'name': values.name, 'csrfToken': csrfToken}))
       // we don't use the try catch here. We use it inside the createAlgorithmThunk's payload creator so that we get the
       // server generated message
@@ -137,13 +142,17 @@ const AlgorithmForm = ({isAddMode, algorithmId}) => {
     await dispatch(updateAlgorithmThunk({'id': algorithmId, 'name': values.name, 'csrfToken': csrfToken}))
   }
 
-  const onTestPressed = () => {
-    setTest(test+1)
+  const onSubmit = async (values, {setSubmitting}) => {
+    if (isAddMode) {
+      await onCreatePressed(values)
+      setCallMode('create')
+    } else {
+      await onUpdatePressed(values)
+      setCallMode('update')
+    }
+    // isSubmitting must be set to false after the onPressed returns a resolved promise
+    setSubmitting(false)
   }
-
-  (function beforeRender() {
-    console.log("BEFORE RENDER")
-  })()
 
   if (!isAddMode) {
     if (getStatus === "loading") {
@@ -155,7 +164,7 @@ const AlgorithmForm = ({isAddMode, algorithmId}) => {
         <Card>
           <CardHeader title={isAddMode ? "Create Algorithm" : "Update Algorithm"}/>
           <Divider/>
-          <CardContent>Something went wrong</CardContent>
+          <CardContent><Box display="flex" justifyContent="center">Something went wrong</Box></CardContent>
         </Card>
       )
     }
@@ -225,8 +234,6 @@ const AlgorithmForm = ({isAddMode, algorithmId}) => {
                       >
                         {isAddMode ? "Create" : "Update"}
                       </Button>
-                      <Button onClick={onTestPressed}>Change Test</Button>
-                      <Grid>{test}</Grid>
                     </Grid>
                   </Grid>
               </form>
@@ -236,7 +243,7 @@ const AlgorithmForm = ({isAddMode, algorithmId}) => {
           )}
       </Formik>
 
-      // )}
+    //   )}
     // </>
   )
 }
