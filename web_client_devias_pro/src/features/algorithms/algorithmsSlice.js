@@ -99,6 +99,12 @@ export const getAlgorithmThunk = createAsyncThunk("algorithm/get", async ({id}, 
   }
 })
 
+// update the items array with the updatedItem object based on id match
+const updateItemsById = (items, updatedItem) => {
+  const oldItem = items.filter(item => item.id === updatedItem.id)[0]
+  !oldItem ? items.push(updatedItem) : items[items.indexOf(oldItem)] = updatedItem
+}
+
 export const algorithmsSlice = createSlice({
   name: 'algorithms',
   initialState: {
@@ -141,12 +147,7 @@ export const algorithmsSlice = createSlice({
     [getAlgorithmThunk.fulfilled]: (state, action) => {
       state.get.status = 'succeeded'
       // if the algorithm exist in the store update it with the latest server data, else add it
-      const algorithmIndex = state.list.indexOf(action.payload)
-      if (algorithmIndex > -1){
-        state.list[algorithmIndex] = action.payload
-      }else{
-        state.list.push(action.payload)
-      }
+      updateItemsById(state.list, action.payload)
     },
     [getAlgorithmThunk.rejected]: (state, action) => {
       state.get.status = 'failed'

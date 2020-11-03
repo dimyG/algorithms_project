@@ -43,10 +43,34 @@ const AlgorithmForm = ({isAddMode, algorithmId}) => {
   const csrfToken = useSelector(state => csrfSelector(state))
   const {enqueueSnackbar, closeSnackbar} = useSnackbar()
   const [numCalls, setNumCalls] = useState(0)
-  const [filteredAlgorithm, setFilteredAlgorithm] = useState({id: 0, name: "dummy"})
+  // const [filteredAlgorithm, setFilteredAlgorithm] = useState({id: 0, name: "dummy"})
   // const [initialValues, setInitialValues] = useState({name: filteredAlgorithm.name})
+  const [test, setTest] = useState(0)
 
-  // show back end generated errors in a Snackbar
+  useEffect( () => {
+      // show back end generated errors only after a call (when the number of calls changes). Do not show it
+      // if it is 0 (0 means that the component has just rendered)
+      // todo running the effect when the create_status changes instead of the numCalls doesn't work as expected. Why?
+      if (numCalls > 0) showBackendError(create_status, create_error)
+    }, [numCalls]
+  )
+
+  useEffect(() => {
+    // if (isAddMode) return
+
+    // if we are in edit mode, fetch item data if it hasn't been fetched already (if status is "idle")
+    if (!isAddMode){
+      dispatch(getAlgorithmThunk({'id': algorithmId}))
+        .then(response => {
+          console.log("promised response", response)
+        })
+      // todo maybe store the fetched item in local state instead of global to make things work in a simple way?
+      // todo show errors
+      // todo show values
+    }
+  }, [])
+
+    // show back end generated errors in a Snackbar
   const showBackendError = (status, error) => {
     if (status === 'failed') {
       if (error && error.name) {
@@ -61,60 +85,23 @@ const AlgorithmForm = ({isAddMode, algorithmId}) => {
     }
   }
 
-  useEffect( () => {
-      // show back end generated errors only after a call (when the number of calls changes). Do not show it
-      // if it is 0 (0 means that the component has just rendered)
-      // todo running the effect when the create_status changes instead of the numCalls doesn't work as expected. Why?
-      if (numCalls > 0) showBackendError(create_status, create_error)
-    }, [numCalls]
-  )
-
-  let initialValues = {name: filteredAlgorithm.name}
-  if (isAddMode){
-    initialValues = {name: ''}
-  }else{
-    // Only get the filtered item (algorithm) if there are fetched items (algorithms) in the store.
-    // if you visit the edit url directly then the algorithms list would be empty and filteredAlgorithm undefined
-    // if (algorithms.length) setFilteredAlgorithm(algorithms.filter(algorithm => algorithm.id === parseInt(algorithmId))[0])
-    if (algorithms.length) {
-      const algorithm = algorithms.filter(algorithm => algorithm.id === parseInt(algorithmId))[0]
-      initialValues = {name: algorithm.name}
-      // setFilteredAlgorithm(algorithms.filter(algorithm => algorithm.id === parseInt(algorithmId))[0])
-      // initialValues = {name: filteredAlgorithm.name}
+  const getFilteredAlgorithm = () => {
+    // if the algorithms list is empty (you visit the edit url directly) or the algorithm doesn't exist in the array
+    // return the dummy algorithm. Normally the dummy algorithm should never be seen by the user since when the
+    // algorithm is fetched is added to the array.
+    let dummyAlgorithm = {id: 0, name: "dummy"}
+    const algorithm = algorithms.filter(algorithm => algorithm.id === parseInt(algorithmId))[0]
+    if (algorithm) {
+      return algorithm
+    } else {
+      return dummyAlgorithm
     }
   }
-  console.log("GLOBAL CODE RUNS")
 
-  useEffect(() => {
-    if (isAddMode) return
-    // if we are in edit mode, fetch item data if it hasn't been fetched already (if status is "idle")
-    if (getStatus === 'idle'){
-      dispatch(getAlgorithmThunk({'id': algorithmId}))
-        .then(response => {
-          console.log("promised response", response)
-        })
-      // todo maybe store the fetched item in local state instead of global to make things work in a simple way?
-      // todo show errors
-      // todo show values
-    }
-    else if (getStatus === 'succeeded'){
-      if (algorithms.length) setFilteredAlgorithm(algorithms.filter(algorithm => algorithm.id === parseInt(algorithmId))[0])
-      initialValues = {name: filteredAlgorithm.name}
-    //   // debugger
-    //   // let filteredAlgorithm = {id: 0, name: "dummy"}
-    //   // let initialValues = {name: filteredAlgorithm.name}
-    //   // const filteredAlgorithms = algorithms.filter(algorithm => algorithm.id === parseInt(algorithmId))
-    //   // filteredAlgorithms.length > 1 ? console.error('Algorithms with the same id found in the stored algorithms list') : console.log()
-    //   // const filteredAlgorithm = filteredAlgorithms[0]
-    //   // setFilteredAlgorithm(filteredAlgorithms[0])
-    //   // if (filteredAlgorithms.length) {
-    //   //   console.log("filteredAlgorithms: ", filteredAlgorithms, "filteredAlgorithm", filteredAlgorithm)
-    //   //   isAddMode ? initialValues = {name: ''} : initialValues = {name: filteredAlgorithm.name}
-    //   //   // isAddMode ? setInitialValues({name: ''}) : setInitialValues({name: filteredAlgorithm.name})
-    //   // }
-    }
-    debugger
-  }, [getStatus])
+  const getInitialValues = () => {
+    if (isAddMode) return {name: ""}
+    return {name: getFilteredAlgorithm().name}
+  }
 
   const onSubmit = async (values, {setSubmitting}) => {
     if (isAddMode) {
@@ -150,6 +137,14 @@ const AlgorithmForm = ({isAddMode, algorithmId}) => {
     await dispatch(updateAlgorithmThunk({'id': algorithmId, 'name': values.name, 'csrfToken': csrfToken}))
   }
 
+  const onTestPressed = () => {
+    setTest(test+1)
+  }
+
+  (function beforeRender() {
+    console.log("BEFORE RENDER")
+  })()
+
   if (!isAddMode) {
     if (getStatus === "loading") {
       return (
@@ -174,7 +169,7 @@ const AlgorithmForm = ({isAddMode, algorithmId}) => {
 
       <Formik
           enableReinitialize={true}
-          initialValues={initialValues}
+          initialValues={getInitialValues()}
           validate={values => {
               let errors = {};
               if (!values.name){
@@ -214,7 +209,7 @@ const AlgorithmForm = ({isAddMode, algorithmId}) => {
                       onBlur={formik.handleBlur}
                       onChange={formik.handleChange}
                       type='text'
-                      placeholder = {isAddMode ? "Name" : filteredAlgorithm.name}
+                      placeholder = {isAddMode ? "Name" : getFilteredAlgorithm().name}
                       value={formik.values.name}
                       variant="outlined"
                     />
@@ -230,6 +225,8 @@ const AlgorithmForm = ({isAddMode, algorithmId}) => {
                       >
                         {isAddMode ? "Create" : "Update"}
                       </Button>
+                      <Button onClick={onTestPressed}>Change Test</Button>
+                      <Grid>{test}</Grid>
                     </Grid>
                   </Grid>
               </form>
