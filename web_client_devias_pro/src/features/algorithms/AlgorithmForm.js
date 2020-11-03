@@ -26,6 +26,7 @@ import {
 import { useSnackbar } from 'notistack'
 import {updateAlgorithmThunk} from "./algorithmsSlice";
 import BoxedCircularProgress from "../../components/BoxedCircularProgress";
+import {showBackendError} from "../../utils/misc"
 
 const AlgorithmForm = ({isAddMode, algorithmId}) => {
   const dispatch = useDispatch()
@@ -64,7 +65,7 @@ const AlgorithmForm = ({isAddMode, algorithmId}) => {
 
   useEffect( () => {
     if (callMode === 'get'){
-      showBackendError(getStatus, getError, null)
+      showBackendError(enqueueSnackbar, getStatus, getError, null)
     }
     }, [getStatus, getError, callMode]
   )
@@ -72,7 +73,7 @@ const AlgorithmForm = ({isAddMode, algorithmId}) => {
   useEffect( () => {
     if (callMode === 'create') {
       const successMessage = "Algorithm created successfully"
-      showBackendError(createStatus, createError, successMessage)
+      showBackendError(enqueueSnackbar, createStatus, createError, successMessage)
     }
     }, [createStatus, createError, callMode]
   )
@@ -80,26 +81,10 @@ const AlgorithmForm = ({isAddMode, algorithmId}) => {
   useEffect( () => {
     if (callMode === 'update') {
       const successMessage = "Algorithm updated successfully"
-      showBackendError(updateStatus, updateError, successMessage)
+      showBackendError(enqueueSnackbar, updateStatus, updateError, successMessage)
     }
     }, [updateStatus, updateError, callMode]
   )
-
-  // show back end generated errors in a Snackbar
-  const showBackendError = (status, error, successMessage) => {
-    console.log("RUNNING BACK END ERROR FUNCTION")
-    if (status === 'failed') {
-      if (error && error.name) {
-        enqueueSnackbar(
-          error.name, {variant: 'error'}
-        )
-      } else {
-        enqueueSnackbar(error, {variant: 'error'})
-      }
-    } else if (status === 'succeeded' && successMessage) {
-      enqueueSnackbar(successMessage, {variant: "success"})
-    }
-  }
 
   const getFilteredAlgorithm = () => {
     // if the algorithms list is empty (you visit the edit url directly) or the algorithm doesn't exist in the array

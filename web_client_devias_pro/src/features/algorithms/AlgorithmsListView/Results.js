@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import clsx from 'clsx';
 import moment from 'moment';
@@ -30,9 +30,17 @@ import {
 import Label from 'src/components/Label';
 import GenericMoreButton from 'src/components/GenericMoreButton';
 import BulkOperations from './BulkOperations';
-import {useSelector} from "react-redux";
-import {getAllStatusSelector} from "../algorithmsSlice";
+import {useDispatch, useSelector} from "react-redux";
+import {
+  deleteAlgorithmThunk,
+  deleteErrorSelector,
+  deleteStatusSelector,
+  getAllStatusSelector
+} from "../algorithmsSlice";
 import BoxedCircularProgress from "../../../components/BoxedCircularProgress";
+import { useSnackbar } from 'notistack'
+import {showBackendError} from "../../../utils/misc";
+import {csrfSelector} from "../../csrf/csrfSlice";
 
 const getStatusLabel = (paymentStatus) => {
   const map = {
@@ -73,10 +81,22 @@ const useStyles = makeStyles(() => ({
 
 const Results = ({ className, items, ...rest }) => {
   const classes = useStyles();
+  const dispatch = useDispatch()
   const [selectedOrders, setSelectedOrders] = useState([]);
   const [page, setPage] = useState(0);
   const [limit, setLimit] = useState(10);
+  const deleteStatus = useSelector(state => deleteStatusSelector(state))
+  const deleteError = useSelector(state => deleteErrorSelector(state))
   const getAllStatus = useSelector(state => getAllStatusSelector(state))
+  const csrfToken = useSelector(state => csrfSelector(state))
+  const [callMode, setCallMode] = useState(null)
+  const {enqueueSnackbar, closeSnackbar} = useSnackbar()
+
+  useEffect(() => {
+    if (callMode === 'delete'){
+      showBackendError(enqueueSnackbar, deleteStatus, deleteError, 'Algorithm deleted successfully')
+    }
+  }, [deleteStatus, deleteError, callMode])
 
   const handleSelectAllOrders = (event) => {
     setSelectedOrders(event.target.checked
@@ -104,6 +124,11 @@ const Results = ({ className, items, ...rest }) => {
   const enableBulkOperations = selectedOrders.length > 0;
   const selectedSomeOrders = selectedOrders.length > 0 && selectedOrders.length < items.length;
   const selectedAllOrders = selectedOrders.length === items.length;
+
+  const onDeletePressed = async id => {
+    await dispatch(deleteAlgorithmThunk({"id": id, "csrfToken": csrfToken}))
+    setCallMode('delete')
+  }
 
   return (
     <div
@@ -198,7 +223,7 @@ const Results = ({ className, items, ...rest }) => {
                           </SvgIcon>
                         </IconButton>
                         <IconButton
-                          onClick={() => {alert("delete pressed")}}
+                          onClick={() => onDeletePressed(order.id)}
                         >
                           <SvgIcon fontSize="small">
                             <DeleteIcon />

@@ -88,13 +88,28 @@ export const updateAlgorithmThunk = createAsyncThunk("algorithms/update", async 
 })
 
 export const getAlgorithmThunk = createAsyncThunk("algorithm/get", async ({id}, {rejectWithValue}) => {
-  const body = {'id': id}
+  const config = {"data": {'id': id}}
   try {
-    const response = await axios.get(`/algorithms/${id}`, body)
+    const response = await axios.get(`/algorithms/${id}`, config)
     console.log("get algorithm thunk response:", response)
     return response.data
   } catch (error) {
     console.log("get algorithm thunk error:", JSON.stringify(error))
+    return rejectWithValue(error.message)
+  }
+})
+
+export const deleteAlgorithmThunk = createAsyncThunk("algorithm/delete", async({id, csrfToken}, {rejectWithValue}) =>{
+  const data = {"id": id}
+  const headers = {'X-CSRFToken': csrfToken}
+  const config = {data: data, headers: headers}
+  try{
+    const response = await axios.delete(`/algorithms/${id}/`, config)
+    console.log("delete algorithm thunk response:", response)
+    // the delete response.data is an empty string not the deleted item
+    return id
+  }catch (error){
+    console.log("delete algorithm thunk error:", JSON.stringify(error))
     return rejectWithValue(error.message)
   }
 })
@@ -121,6 +136,10 @@ export const algorithmsSlice = createSlice({
       error: ''
     },
     update: {
+      status: 'idle',
+      error: ''
+    },
+    delete: {
       status: 'idle',
       error: ''
     },
@@ -182,6 +201,19 @@ export const algorithmsSlice = createSlice({
       state.update.status = 'failed'
       state.update.error = action.payload
     },
+    [deleteAlgorithmThunk.pending]: (state, action) => {
+      state.delete.status = 'loading'
+    },
+    [deleteAlgorithmThunk.fulfilled]: (state, action) => {
+      state.delete.status = 'succeeded'
+      const deletedItem = state.list.filter(item => item.id === action.payload)[0]
+      const index = state.list.indexOf(deletedItem)
+      state.list.splice(index, 1)
+    },
+    [deleteAlgorithmThunk.rejected]: (state, action) => {
+      state.delete.status = 'failed'
+      state.delete.error = action.payload
+    },
   }
 })
 
@@ -194,5 +226,7 @@ export const createErrorSelector = state => state.algorithms.create.error
 export const createStatusSelector = state => state.algorithms.create.status
 export const updateStatusSelector = state => state.algorithms.update.status
 export const updateErrorSelector = state => state.algorithms.update.error
+export const deleteStatusSelector = state => state.algorithms.delete.status
+export const deleteErrorSelector = state => state.algorithms.delete.error
 
 export default algorithmsSlice.reducer
