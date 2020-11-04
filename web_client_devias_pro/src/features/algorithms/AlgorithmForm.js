@@ -45,15 +45,14 @@ const AlgorithmForm = ({isAddMode, algorithmId}) => {
   const [callMode, setCallMode] = useState(null)
 
   useEffect(() => {
-    // if we are in edit mode, fetch item data after component mounts
-    if (!isAddMode){
-      dispatch(getAlgorithmThunk({'id': algorithmId}))
-        .then(response => {
-          // console.log("promised response", response)
-          // todo maybe store the fetched item in local state instead of global
-          setCallMode('get')
-        })
-      }
+    async function getItem(){
+      await dispatch(getAlgorithmThunk({'id': algorithmId}))
+      setCallMode('get')
+    }
+    // if we are in edit mode, fetch item data (after component mounts)
+    if (!isAddMode) {
+      const promise = getItem()
+    }
     }, []
   )
 
@@ -62,28 +61,17 @@ const AlgorithmForm = ({isAddMode, algorithmId}) => {
   // Running the effects using only the status values as dependencies doesn't work as expected
   // because the component is mounted every time you visit its route and the effects with dependencies run
   // after mounting, showing the latest generated message which shouldn't be shown.
-
   useEffect( () => {
     if (callMode === 'get'){
       showBackendError(enqueueSnackbar, getStatus, getError, null)
-    }
-    }, [getStatus, getError, callMode]
-  )
-
-  useEffect( () => {
-    if (callMode === 'create') {
+    } else if (callMode === 'create'){
       const successMessage = "Algorithm created successfully"
       showBackendError(enqueueSnackbar, createStatus, createError, successMessage)
-    }
-    }, [createStatus, createError, callMode]
-  )
-
-  useEffect( () => {
-    if (callMode === 'update') {
+    } else if (callMode === 'update'){
       const successMessage = "Algorithm updated successfully"
       showBackendError(enqueueSnackbar, updateStatus, updateError, successMessage)
     }
-    }, [updateStatus, updateError, callMode]
+    }, [getStatus, getError, createStatus, createError, updateStatus, updateError, callMode]
   )
 
   const getFilteredAlgorithm = () => {

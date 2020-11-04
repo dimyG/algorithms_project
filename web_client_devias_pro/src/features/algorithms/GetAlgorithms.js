@@ -4,38 +4,35 @@ import {getAlgorithmsThunk, getAllErrorSelector, getAllStatusSelector} from "./a
 import {useSelector, useDispatch} from "react-redux";
 import {useSnackbar} from "notistack";
 
-// get the algorithms whenever the App is rendered. The stored algorithms list is needed by many components and needs
-// to always be filled with server data. This way you could visit directly a url that loads a component that uses the
-// algorithms list, without first having to visit the url that renders the algorithms list component.
+// This component doesn't show anything on the page. It can be rendered whenever we want it to get the algorithms from the server
 const GetAlgorithms = () => {
   const getAllStatus = useSelector(state => getAllStatusSelector(state))
   const getAllError = useSelector(state => getAllErrorSelector(state))
   const [numCalls, setNumCalls] = useState(0)
   const { enqueueSnackbar, closeSnackbar} = useSnackbar()
-
   const dispatch = useDispatch()
 
-  // update the numCalls only when the get thunk completes its execution
-  const get = async () => {
-    await dispatch(getAlgorithmsThunk())
-    setNumCalls(numCalls + 1)
-  }
-
   useEffect(() => {
-    // getting the items on 'idle' means getting them only the first time the component renders
-    // This means that you need to reload the page to make a new get call.
-    if (getAllStatus === 'idle') {
-      const promise = get()
+    // since useEffect can't be an async function you can declare it inside it and call it later on
+    async function getItems(){
+      await dispatch(getAlgorithmsThunk())
+      setNumCalls(numCalls + 1)
     }
-  })
+    // Get items only on page load, not every time the component mounts.
+    // This way you avoid the calls on back/forward operations to the component
+    if (getAllStatus === 'idle'){
+      const promise = getItems()
+    }
+  }, [])
 
   useEffect(() => {
+    // if numCalls > 0 to avoid the issue of showing a previous error on mount
     if (numCalls > 0) {
       if (getAllStatus === 'failed' && getAllError) {
         enqueueSnackbar(getAllError, {variant: 'error'})
       }
     }
-  }, [numCalls])
+  }, [getAllStatus, getAllError, numCalls])
 
   return null
 }
