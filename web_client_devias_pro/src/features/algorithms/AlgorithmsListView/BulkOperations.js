@@ -78,26 +78,26 @@ const BulkOperations = ({
             xs={12}
           >
             <div className={classes.actions}>
-              <Button
-                onClick={onMarkPaid}
-                startIcon={
-                  <SvgIcon fontSize="small" >
-                    <CheckIcon />
-                  </SvgIcon>
-                }
-              >
-                Mark Paid
-              </Button>
-              <Button
-                onClick={onMarkUnpaid}
-                startIcon={
-                  <SvgIcon fontSize="small" >
-                    <XIcon />
-                  </SvgIcon>
-                }
-              >
-                Mark Unpaid
-              </Button>
+              {/*<Button*/}
+              {/*  onClick={onMarkPaid}*/}
+              {/*  startIcon={*/}
+              {/*    <SvgIcon fontSize="small" >*/}
+              {/*      <CheckIcon />*/}
+              {/*    </SvgIcon>*/}
+              {/*  }*/}
+              {/*>*/}
+              {/*  Mark Paid*/}
+              {/*</Button>*/}
+              {/*<Button*/}
+              {/*  onClick={onMarkUnpaid}*/}
+              {/*  startIcon={*/}
+              {/*    <SvgIcon fontSize="small" >*/}
+              {/*      <XIcon />*/}
+              {/*    </SvgIcon>*/}
+              {/*  }*/}
+              {/*>*/}
+              {/*  Mark Unpaid*/}
+              {/*</Button>*/}
               <Button
                 onClick={onDelete}
                 startIcon={

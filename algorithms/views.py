@@ -5,6 +5,8 @@ from .serializers import AlgorithmSerializer
 from django.views.decorators.csrf import csrf_protect
 from django.utils.decorators import method_decorator
 from django.template.response import TemplateResponse
+from rest_framework.decorators import action
+from rest_framework.response import Response
 import time
 
 
@@ -30,6 +32,16 @@ class AlgorithmViewSet(AlgorithmMixin, viewsets.ModelViewSet):
         response = super(AlgorithmViewSet, self).retrieve(request, *args, **kwargs)
         # time.sleep(0.5)
         return response
+
+    @action(detail=False, methods=['delete'])
+    def delete_many(self, request, *args, **kwargs):
+        ids = []
+        for item in request.data:
+            algorithm_id = item.get("id", None)
+            if algorithm_id:
+                ids.append(algorithm_id)
+        response = Algorithm.objects.filter(id__in=ids).delete()
+        return Response(response)
 
 
 def test(request):

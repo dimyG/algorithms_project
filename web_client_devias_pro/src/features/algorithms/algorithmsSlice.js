@@ -114,6 +114,21 @@ export const deleteAlgorithmThunk = createAsyncThunk("algorithm/delete", async({
   }
 })
 
+export const deleteAlgorithmsThunk = createAsyncThunk("algorithms/delete", async({ids, csrfToken}, {rejectWithValue}) =>{
+  const data = ids.map(id => {return {"id": id}})
+  const headers = {'X-CSRFToken': csrfToken}
+  const config = {data: data, headers: headers}
+  try{
+    const response = await axios.delete("/algorithms/delete_many/", config)
+    console.log("delete many algorithms thunk response:", response)
+    // the delete response.data is an empty string not the deleted item
+    return {ids, responseData: response.data}
+  }catch (error){
+    console.log("delete many algorithms thunk error:", JSON.stringify(error))
+    return rejectWithValue(error.message)
+  }
+})
+
 // update the items array with the updatedItem object based on id match
 const updateItemsById = (items, updatedItem) => {
   const oldItem = items.filter(item => item.id === updatedItem.id)[0]
@@ -140,6 +155,10 @@ export const algorithmsSlice = createSlice({
       error: ''
     },
     delete: {
+      status: 'idle',
+      error: ''
+    },
+    delete_many: {
       status: 'idle',
       error: ''
     },
@@ -214,6 +233,22 @@ export const algorithmsSlice = createSlice({
       state.delete.status = 'failed'
       state.delete.error = action.payload
     },
+
+    [deleteAlgorithmsThunk.pending]: (state, action) => {
+      state.delete_many.status = 'loading'
+    },
+    [deleteAlgorithmsThunk.fulfilled]: (state, action) => {
+      state.delete_many.status = 'succeeded'
+      const deletedItems = state.list.filter(item => {
+        // console.log(action.payload.ids, item.id, action.payload.ids.includes(item.id))
+        return action.payload.ids.includes(item.id)
+      })
+      state.list = state.list.filter(item => !deletedItems.includes(item))
+    },
+    [deleteAlgorithmsThunk.rejected]: (state, action) => {
+      state.delete_many.status = 'failed'
+      state.delete_many.error = action.payload
+    },
   }
 })
 
@@ -228,5 +263,7 @@ export const updateStatusSelector = state => state.algorithms.update.status
 export const updateErrorSelector = state => state.algorithms.update.error
 export const deleteStatusSelector = state => state.algorithms.delete.status
 export const deleteErrorSelector = state => state.algorithms.delete.error
+export const deleteManyStatusSelector = state => state.algorithms.delete_many.status
+export const deleteManyErrorSelector = state => state.algorithms.delete_many.error
 
 export default algorithmsSlice.reducer

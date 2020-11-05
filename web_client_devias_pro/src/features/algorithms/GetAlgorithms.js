@@ -16,7 +16,7 @@ const GetAlgorithms = () => {
     // since useEffect can't be an async function you can declare it inside it and call it later on
     async function getItems(){
       await dispatch(getAlgorithmsThunk())
-      setNumCalls(numCalls + 1)
+      setNumCalls(prevNumCalls => prevNumCalls + 1)
     }
     // Get items only on page load, not every time the component mounts.
     // This way you avoid the calls on back/forward operations to the component
