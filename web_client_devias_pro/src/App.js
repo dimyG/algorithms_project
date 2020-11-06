@@ -22,6 +22,7 @@ import useSettings from 'src/hooks/useSettings';
 import { createTheme } from 'src/theme';
 import routes, { renderRoutes } from 'src/routesCustom';
 import {Csrf} from "./features/csrf/csrf";
+import Messages from "./components/Messages";
 
 const jss = create({ plugins: [...jssPreset().plugins, rtl()] });
 const history = createBrowserHistory();
@@ -61,6 +62,7 @@ const App = () => {
             )}
           >
             <Csrf/>
+            <Messages/>
             <Router history={history}>
               <AuthProvider>
                 <GlobalStyles />

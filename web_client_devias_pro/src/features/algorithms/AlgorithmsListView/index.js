@@ -14,7 +14,7 @@ import Page from 'src/components/Page';
 import Header from './Header';
 import Results from './Results';
 import {useSelector, useDispatch} from "react-redux";
-import {getAlgorithmsThunk, getAllStatusSelector, getAllErrorSelector, algorithmsSelector } from "../algorithmsSlice";
+import {algorithmsSelector} from "../algorithmsSlice";
 import GetAlgorithms from "../GetAlgorithms";
 
 const useStyles = makeStyles((theme) => ({

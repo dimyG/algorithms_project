@@ -3,9 +3,7 @@ import {useDispatch, useSelector} from "react-redux";
 import {
   algorithmsSelector,
   createAlgorithmThunk,
-  createErrorSelector,
-  createStatusSelector,
-  getAlgorithmThunk, getErrorSelector, getStatusSelector, updateErrorSelector, updateStatusSelector
+  getAlgorithmThunk, getStatusSelector,
 } from "./algorithmsSlice";
 import {csrfSelector} from "../csrf/csrfSlice";
 import {Formik, Form, Field, ErrorMessage, useFormik} from "formik";
@@ -23,55 +21,28 @@ import {
   Button,
   Grid
 } from "@material-ui/core";
-import { useSnackbar } from 'notistack'
 import {updateAlgorithmThunk} from "./algorithmsSlice";
 import BoxedCircularProgress from "../../components/BoxedCircularProgress";
-import {showBackendError} from "../../utils/misc"
+import {unwrapResult} from "@reduxjs/toolkit";
 
 const AlgorithmForm = ({isAddMode, algorithmId}) => {
   const dispatch = useDispatch()
   // the create_error is currently necessary to be in the global store, since it takes its value from the
   // thunk's payload creation which lies in the slice file (in another file). the create_status could just be
   // part of the local state.
-  const createStatus = useSelector(state => createStatusSelector(state))
-  const createError = useSelector(state => createErrorSelector(state))
   const algorithms = useSelector(state => algorithmsSelector(state))
   const getStatus = useSelector(state => getStatusSelector(state))
-  const getError = useSelector(state => getErrorSelector(state))
-  const updateStatus = useSelector(state => updateStatusSelector(state))
-  const updateError = useSelector(state => updateErrorSelector(state))
   const csrfToken = useSelector(state => csrfSelector(state))
-  const {enqueueSnackbar, closeSnackbar} = useSnackbar()
-  const [callMode, setCallMode] = useState(null)
 
   useEffect(() => {
     async function getItem(){
       await dispatch(getAlgorithmThunk({'id': algorithmId}))
-      setCallMode('get')
     }
     // if we are in edit mode, fetch item data (after component mounts)
     if (!isAddMode) {
       const promise = getItem()
     }
     }, []
-  )
-
-  // Show back end errors (get, create or update) based on which one was the latest call. If the latest call was
-  // a create one, the callMode will be 'create' and the create status and error will be used.
-  // Running the effects using only the status values as dependencies doesn't work as expected
-  // because the component is mounted every time you visit its route and the effects with dependencies run
-  // after mounting, showing the latest generated message which shouldn't be shown.
-  useEffect( () => {
-    if (callMode === 'get'){
-      showBackendError(enqueueSnackbar, getStatus, getError, null)
-    } else if (callMode === 'create'){
-      const successMessage = "Algorithm created successfully"
-      showBackendError(enqueueSnackbar, createStatus, createError, successMessage)
-    } else if (callMode === 'update'){
-      const successMessage = "Algorithm updated successfully"
-      showBackendError(enqueueSnackbar, updateStatus, updateError, successMessage)
-    }
-    }, [getStatus, getError, createStatus, createError, updateStatus, updateError, callMode]
   )
 
   const getFilteredAlgorithm = () => {
@@ -98,11 +69,12 @@ const AlgorithmForm = ({isAddMode, algorithmId}) => {
       // in case of no error the thunk returns a resolved promise with a fulfilled action object
       // in case of error, the thunk returns a resolved promise with a rejected action object
       // console.log('values', values, 'csrf_token', csrfToken)
-      await dispatch(createAlgorithmThunk({'name': values.name, 'csrfToken': csrfToken}))
+      const createResult = await dispatch(createAlgorithmThunk({'name': values.name, 'csrfToken': csrfToken}))
+      // console.log("result of dispatching the create thunk:", createResult)
       // we don't use the try catch here. We use it inside the createAlgorithmThunk's payload creator so that we get the
       // server generated message
       // try{
-      //     const create_result = await dispatch(createAlgorithmThunk({'name': name, 'csrf_token': csrf_token}))
+      //     const create_result = await dispatch(createAlgorithmThunk({'name': values.name, 'csrfToken': csrfToken}))
       //     unwrapResult(create_result)
       //     setName('')
       // }catch (error){
@@ -118,10 +90,8 @@ const AlgorithmForm = ({isAddMode, algorithmId}) => {
   const onSubmit = async (values, {setSubmitting}) => {
     if (isAddMode) {
       await onCreatePressed(values)
-      setCallMode('create')
     } else {
       await onUpdatePressed(values)
-      setCallMode('update')
     }
     // isSubmitting must be set to false after the onPressed returns a resolved promise
     setSubmitting(false)

@@ -34,13 +34,9 @@ import {useDispatch, useSelector} from "react-redux";
 import {
   deleteAlgorithmThunk,
   deleteAlgorithmsThunk,
-  deleteErrorSelector,
-  deleteStatusSelector,
-  getAllStatusSelector, deleteManyErrorSelector, deleteManyStatusSelector
+  getAllStatusSelector
 } from "../algorithmsSlice";
 import BoxedCircularProgress from "../../../components/BoxedCircularProgress";
-import { useSnackbar } from 'notistack'
-import {showBackendError} from "../../../utils/misc";
 import {csrfSelector} from "../../csrf/csrfSlice";
 
 const getStatusLabel = (paymentStatus) => {
@@ -86,24 +82,8 @@ const Results = ({ className, items, ...rest }) => {
   const [selectedOrders, setSelectedOrders] = useState([]);
   const [page, setPage] = useState(0);
   const [limit, setLimit] = useState(10);
-  const [latestCallMode, setLatestCallMode] = useState(null)
-  const deleteStatus = useSelector(state => deleteStatusSelector(state))
-  const deleteError = useSelector(state => deleteErrorSelector(state))
-  const deleteManyStatus = useSelector(state => deleteManyStatusSelector(state))
-  const deleteManyError = useSelector(state => deleteManyErrorSelector(state))
   const getAllStatus = useSelector(state => getAllStatusSelector(state))
   const csrfToken = useSelector(state => csrfSelector(state))
-  const {enqueueSnackbar, closeSnackbar} = useSnackbar()
-
-  useEffect(() => {
-    if (latestCallMode === 'delete'){
-      // console.log("mode delete")
-      showBackendError(enqueueSnackbar, deleteStatus, deleteError, 'Algorithm deleted successfully')
-    } else if (latestCallMode === 'delete_many'){
-      // console.log("mode delete many")
-      showBackendError(enqueueSnackbar, deleteManyStatus, deleteManyError, 'Algorithms deleted successfully')
-    }
-  }, [deleteStatus, deleteError, deleteManyStatus, deleteManyError, latestCallMode])
 
   const handleSelectAllOrders = (event) => {
     setSelectedOrders(event.target.checked
@@ -134,13 +114,11 @@ const Results = ({ className, items, ...rest }) => {
 
   const onDeletePressed = async id => {
     await dispatch(deleteAlgorithmThunk({"id": id, "csrfToken": csrfToken}))
-    setLatestCallMode('delete')
   }
 
   const onDeleteManyPressed = async () => {
     await dispatch(deleteAlgorithmsThunk({"ids": selectedOrders, "csrfToken": csrfToken}))
     setSelectedOrders([])  // empty the selected items list state variable so that the Drawer closes
-    setLatestCallMode('delete_many')
   }
 
   return (

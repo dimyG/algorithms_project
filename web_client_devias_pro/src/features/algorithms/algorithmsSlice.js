@@ -1,6 +1,6 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import {createSlice, createAsyncThunk, nanoid} from '@reduxjs/toolkit';
 import axios from 'axios'
-import _ from 'lodash'
+import store from "../../store"
 
 async function long(){
   console.log('running long task...')
@@ -14,7 +14,8 @@ async function long(){
 // payloadCreator is a callback function that should return a promise containing the result of some asynchronous logic.
 // It may also return a value synchronously. If there is an error, it should either return a rejected promise
 // containing an Error instance or a plain value such as a descriptive error message or otherwise a resolved promise
-// with a RejectWithValue argument as returned by the thunkAPI.rejectWithValue function.
+// with a RejectWithValue argument as returned by the thunkAPI.rejectWithValue function. The RejectWithValue
+// approach is the only way I found to get the server generated error message (for example item with this name already exists)
 export const getAlgorithmsThunk = createAsyncThunk('algorithms/get', async (dummy, {rejectWithValue}) => {
   try {
     const response = await axios.get('/algorithms/')
@@ -22,6 +23,7 @@ export const getAlgorithmsThunk = createAsyncThunk('algorithms/get', async (dumm
     return response.data
   }catch (error) {
     // console.log('getAlgorithmsThunk error', JSON.stringify(error))
+    store.dispatch(algorithmsSlice.actions.addMessage({text: JSON.stringify(error.message), mode: "error", seen: false}))
     return rejectWithValue(error.message)
   }
 })
@@ -35,6 +37,8 @@ export const createAlgorithmThunk = createAsyncThunk('algorithms/create', async 
   try{
     const response = await axios.post('/algorithms/', body, config)
     // console.log('createAlgorithmThunk response:', response)
+    const successMessage = `algorithm ${response.data.name} created successfully`
+    store.dispatch(algorithmsSlice.actions.addMessage({text: successMessage, mode: "success", seen: false}))
     return response.data
   }catch (error) {
     // console.log('createAlgorithmThunk error:', error, 'error.response:', error.response, 'error.response.data', error.response.data)
@@ -44,6 +48,7 @@ export const createAlgorithmThunk = createAsyncThunk('algorithms/create', async 
     const forbidden_msg = "Your request was forbidden"
     let error_payload
     error.response.status === 403 ? error_payload = forbidden_msg : error_payload = error.response.data
+    store.dispatch(algorithmsSlice.actions.addMessage({text: JSON.stringify(error_payload), mode: "error", seen: false}))
     return rejectWithValue(error_payload)
   }
     // this is a stackoverflow answer for handling django validation error's and more. An equivalent
@@ -80,9 +85,12 @@ export const updateAlgorithmThunk = createAsyncThunk("algorithms/update", async 
     // the trailing slash is needed by django in PUT requests
     const response = await axios.put(`/algorithms/${id}/`, body, config)
     console.log("edit algorithm thunk response:", response)
+    const successMessage = `algorithm ${response.data.name} updated successfully`
+    store.dispatch(algorithmsSlice.actions.addMessage({text: successMessage, mode: "success", seen: false}))
     return response.data
   } catch (error) {
     console.log("edit algorithm thunk error:", JSON.stringify(error))
+    store.dispatch(algorithmsSlice.actions.addMessage({text: JSON.stringify(error.message), mode: "error", seen: false}))
     return rejectWithValue(error.message)
   }
 })
@@ -95,6 +103,7 @@ export const getAlgorithmThunk = createAsyncThunk("algorithm/get", async ({id}, 
     return response.data
   } catch (error) {
     console.log("get algorithm thunk error:", JSON.stringify(error))
+    store.dispatch(algorithmsSlice.actions.addMessage({text: JSON.stringify(error.message), mode: "error", seen: false}))
     return rejectWithValue(error.message)
   }
 })
@@ -106,10 +115,12 @@ export const deleteAlgorithmThunk = createAsyncThunk("algorithm/delete", async({
   try{
     const response = await axios.delete(`/algorithms/${id}/`, config)
     console.log("delete algorithm thunk response:", response)
+    store.dispatch(algorithmsSlice.actions.addMessage({text: 'Algorithm deleted successfully', mode: "success", seen: false}))
     // the delete response.data is an empty string not the deleted item
     return id
   }catch (error){
     console.log("delete algorithm thunk error:", JSON.stringify(error))
+    store.dispatch(algorithmsSlice.actions.addMessage({text: JSON.stringify(error.message), mode: "error", seen: false}))
     return rejectWithValue(error.message)
   }
 })
@@ -122,9 +133,12 @@ export const deleteAlgorithmsThunk = createAsyncThunk("algorithms/delete", async
     const response = await axios.delete("/algorithms/delete_many/", config)
     console.log("delete many algorithms thunk response:", response)
     // the delete response.data is an empty string not the deleted item
+    const successMessage = `${ids.length} algorithms deleted successfully`
+    store.dispatch(algorithmsSlice.actions.addMessage({text: successMessage, mode: "success", seen: false}))
     return {ids, responseData: response.data}
   }catch (error){
     console.log("delete many algorithms thunk error:", JSON.stringify(error))
+    store.dispatch(algorithmsSlice.actions.addMessage({text: JSON.stringify(error.message), mode: "error", seen: false}))
     return rejectWithValue(error.message)
   }
 })
@@ -163,8 +177,33 @@ export const algorithmsSlice = createSlice({
       error: ''
     },
     list: [],
+    messages: []
   },
-  reducers: {},
+  reducers: {
+    addMessage: {
+      reducer(state, action) {
+        state.messages.push(action.payload)
+      },
+      // add an id to every message item that is added to the store
+      prepare(messageItem){
+        return{
+          payload: {
+            id: nanoid(),
+            ...messageItem
+          }
+        }
+      }
+    },
+    markMessageSeen: (state, action) => {
+      const seenMessageId = action.payload
+      for (let i = 0; i <= state.messages.length - 1; i++) {
+        if (state.messages[i].id === seenMessageId) {
+          state.messages[i].seen = true
+          break
+        }
+      }
+    }
+  },
   extraReducers: {
     [getAlgorithmsThunk.pending]: (state, action) => {
       state.get_all.status = 'loading'
@@ -201,6 +240,7 @@ export const algorithmsSlice = createSlice({
     },
     [createAlgorithmThunk.rejected]: (state, action) => {
       state.create.status = 'failed'
+      // console.log("create thunk error:", action.error)
       // state.create.error = action.error.message
       // return rejectWithValue(errorPayload) causes the rejected action to use the errorPayload value as action.payload
       state.create.error = action.payload
@@ -253,17 +293,20 @@ export const algorithmsSlice = createSlice({
 })
 
 export const algorithmsSelector = state => state.algorithms.list
-export const getAllErrorSelector = state => state.algorithms.get_all.error
+export const messagesSelector = state => state.algorithms.messages
+// export const getAllErrorSelector = state => state.algorithms.get_all.error
 export const getAllStatusSelector = state => state.algorithms.get_all.status
-export const getErrorSelector = state => state.algorithms.get.error
+// export const getErrorSelector = state => state.algorithms.get.error
 export const getStatusSelector = state => state.algorithms.get.status
-export const createErrorSelector = state => state.algorithms.create.error
-export const createStatusSelector = state => state.algorithms.create.status
-export const updateStatusSelector = state => state.algorithms.update.status
-export const updateErrorSelector = state => state.algorithms.update.error
-export const deleteStatusSelector = state => state.algorithms.delete.status
-export const deleteErrorSelector = state => state.algorithms.delete.error
-export const deleteManyStatusSelector = state => state.algorithms.delete_many.status
-export const deleteManyErrorSelector = state => state.algorithms.delete_many.error
+// export const createErrorSelector = state => state.algorithms.create.error
+// export const createStatusSelector = state => state.algorithms.create.status
+// export const updateStatusSelector = state => state.algorithms.update.status
+// export const updateErrorSelector = state => state.algorithms.update.error
+// export const deleteStatusSelector = state => state.algorithms.delete.status
+// export const deleteErrorSelector = state => state.algorithms.delete.error
+// export const deleteManyStatusSelector = state => state.algorithms.delete_many.status
+// export const deleteManyErrorSelector = state => state.algorithms.delete_many.error
+
+export const {markMessageSeen}  = algorithmsSlice.actions
 
 export default algorithmsSlice.reducer
