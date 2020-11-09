@@ -36,256 +36,260 @@ import {
   MessageCircle as MessageCircleIcon,
   PieChart as PieChartIcon,
   Share2 as ShareIcon,
-  Users as UsersIcon
+  Users as UsersIcon,
+  Command as CommandIcon
 } from 'react-feather';
 import Logo from 'src/components/Logo';
 import useAuth from 'src/hooks/useAuth';
 import NavItem from './NavItem';
+import {useSelector} from "react-redux";
+import {algorithmsSelector} from "../../../features/algorithms/algorithmsSlice";
+import {nanoid} from "@reduxjs/toolkit";
 
-const sections = [
-  {
-    subheader: 'Reports',
-    items: [
-      {
-        title: 'Dashboard',
-        icon: PieChartIcon,
-        href: '/app/reports/dashboard'
-      },
-      {
-        title: 'Dashboard Alternative',
-        icon: BarChartIcon,
-        href: '/app/reports/dashboard-alternative'
-      }
-    ]
-  },
-  {
-    subheader: 'Management',
-    items: [
-      {
-        title: 'Customers',
-        icon: UsersIcon,
-        href: '/app/management/customers',
-        items: [
-          {
-            title: 'List Customers',
-            href: '/app/management/customers'
-          },
-          {
-            title: 'View Customer',
-            href: '/app/management/customers/1'
-          },
-          {
-            title: 'Edit Customer',
-            href: '/app/management/customers/1/edit'
-          }
-        ]
-      },
-      {
-        title: 'Products',
-        icon: ShoppingCartIcon,
-        href: '/app/management/products',
-        items: [
-          {
-            title: 'List Products',
-            href: '/app/management/products'
-          },
-          {
-            title: 'Create Product',
-            href: '/app/management/products/create'
-          }
-        ]
-      },
-      {
-        title: 'Orders',
-        icon: FolderIcon,
-        href: '/app/management/orders',
-        items: [
-          {
-            title: 'List Orders',
-            href: '/app/management/orders'
-          },
-          {
-            title: 'View Order',
-            href: '/app/management/orders/1'
-          }
-        ]
-      },
-      {
-        title: 'Invoices',
-        icon: ReceiptIcon,
-        href: '/app/management/invoices',
-        items: [
-          {
-            title: 'List Invoices',
-            href: '/app/management/invoices'
-          },
-          {
-            title: 'View Invoice',
-            href: '/app/management/invoices/1'
-          }
-        ]
-      }
-    ]
-  },
-  {
-    subheader: 'Applications',
-    items: [
-      {
-        title: 'Projects Platform',
-        href: '/app/projects',
-        icon: BriefcaseIcon,
-        items: [
-          {
-            title: 'Overview',
-            href: '/app/projects/overview'
-          },
-          {
-            title: 'Browse Projects',
-            href: '/app/projects/browse'
-          },
-          {
-            title: 'Create Project',
-            href: '/app/projects/create'
-          },
-          {
-            title: 'View Project',
-            href: '/app/projects/1'
-          }
-        ]
-      },
-      {
-        title: 'Social Platform',
-        href: '/app/social',
-        icon: ShareIcon,
-        items: [
-          {
-            title: 'Profile',
-            href: '/app/social/profile'
-          },
-          {
-            title: 'Feed',
-            href: '/app/social/feed'
-          }
-        ]
-      },
-      {
-        title: 'Kanban',
-        href: '/app/kanban',
-        icon: TrelloIcon
-      },
-      {
-        title: 'Mail',
-        href: '/app/mail',
-        icon: MailIcon
-      },
-      {
-        title: 'Chat',
-        href: '/app/chat',
-        icon: MessageCircleIcon,
-        info: () => (
-          <Chip
-            color="secondary"
-            size="small"
-            label="Updated"
-          />
-        )
-      },
-      {
-        title: 'Calendar',
-        href: '/app/calendar',
-        icon: CalendarIcon,
-        info: () => (
-          <Chip
-            color="secondary"
-            size="small"
-            label="Updated"
-          />
-        )
-      }
-    ]
-  },
-  {
-    subheader: 'Auth',
-    items: [
-      {
-        title: 'Login',
-        href: '/login-unprotected',
-        icon: LockIcon
-      },
-      {
-        title: 'Register',
-        href: '/register-unprotected',
-        icon: UserPlusIcon
-      }
-    ]
-  },
-  {
-    subheader: 'Pages',
-    items: [
-      {
-        title: 'Account',
-        href: '/app/account',
-        icon: UserIcon
-      },
-      {
-        title: 'Error',
-        href: '/404',
-        icon: AlertCircleIcon
-      },
-      {
-        title: 'Pricing',
-        href: '/pricing',
-        icon: DollarSignIcon
-      }
-    ]
-  },
-  {
-    subheader: 'Extra',
-    items: [
-      {
-        title: 'Charts',
-        href: '/app/extra/charts',
-        icon: BarChartIcon,
-        items: [
-          {
-            title: 'Apex Charts',
-            href: '/app/extra/charts/apex'
-          }
-        ]
-      },
-      {
-        title: 'Forms',
-        href: '/app/extra/forms',
-        icon: EditIcon,
-        items: [
-          {
-            title: 'Formik',
-            href: '/app/extra/forms/formik'
-          },
-          {
-            title: 'Redux Forms',
-            href: '/app/extra/forms/redux'
-          },
-        ]
-      },
-      {
-        title: 'Editors',
-        href: '/app/extra/editors',
-        icon: LayoutIcon,
-        items: [
-          {
-            title: 'DraftJS Editor',
-            href: '/app/extra/editors/draft-js'
-          },
-          {
-            title: 'Quill Editor',
-            href: '/app/extra/editors/quill'
-          }
-        ]
-      }
-    ]
-  }
-];
+// const sections = [
+//   {
+//     subheader: 'Reports',
+//     items: [
+//       {
+//         title: 'Dashboard',
+//         icon: PieChartIcon,
+//         href: '/app/reports/dashboard'
+//       },
+//       {
+//         title: 'Dashboard Alternative',
+//         icon: BarChartIcon,
+//         href: '/app/reports/dashboard-alternative'
+//       }
+//     ]
+//   },
+//   {
+//     subheader: 'Management',
+//     items: [
+//       {
+//         title: 'Customers',
+//         icon: UsersIcon,
+//         href: '/app/management/customers',
+//         items: [
+//           {
+//             title: 'List Customers',
+//             href: '/app/management/customers'
+//           },
+//           {
+//             title: 'View Customer',
+//             href: '/app/management/customers/1'
+//           },
+//           {
+//             title: 'Edit Customer',
+//             href: '/app/management/customers/1/edit'
+//           }
+//         ]
+//       },
+//       {
+//         title: 'Products',
+//         icon: ShoppingCartIcon,
+//         href: '/app/management/products',
+//         items: [
+//           {
+//             title: 'List Products',
+//             href: '/app/management/products'
+//           },
+//           {
+//             title: 'Create Product',
+//             href: '/app/management/products/create'
+//           }
+//         ]
+//       },
+//       {
+//         title: 'Orders',
+//         icon: FolderIcon,
+//         href: '/app/management/orders',
+//         items: [
+//           {
+//             title: 'List Orders',
+//             href: '/app/management/orders'
+//           },
+//           {
+//             title: 'View Order',
+//             href: '/app/management/orders/1'
+//           }
+//         ]
+//       },
+//       {
+//         title: 'Invoices',
+//         icon: ReceiptIcon,
+//         href: '/app/management/invoices',
+//         items: [
+//           {
+//             title: 'List Invoices',
+//             href: '/app/management/invoices'
+//           },
+//           {
+//             title: 'View Invoice',
+//             href: '/app/management/invoices/1'
+//           }
+//         ]
+//       }
+//     ]
+//   },
+//   {
+//     subheader: 'Applications',
+//     items: [
+//       {
+//         title: 'Projects Platform',
+//         href: '/app/projects',
+//         icon: BriefcaseIcon,
+//         items: [
+//           {
+//             title: 'Overview',
+//             href: '/app/projects/overview'
+//           },
+//           {
+//             title: 'Browse Projects',
+//             href: '/app/projects/browse'
+//           },
+//           {
+//             title: 'Create Project',
+//             href: '/app/projects/create'
+//           },
+//           {
+//             title: 'View Project',
+//             href: '/app/projects/1'
+//           }
+//         ]
+//       },
+//       {
+//         title: 'Social Platform',
+//         href: '/app/social',
+//         icon: ShareIcon,
+//         items: [
+//           {
+//             title: 'Profile',
+//             href: '/app/social/profile'
+//           },
+//           {
+//             title: 'Feed',
+//             href: '/app/social/feed'
+//           }
+//         ]
+//       },
+//       {
+//         title: 'Kanban',
+//         href: '/app/kanban',
+//         icon: TrelloIcon
+//       },
+//       {
+//         title: 'Mail',
+//         href: '/app/mail',
+//         icon: MailIcon
+//       },
+//       {
+//         title: 'Chat',
+//         href: '/app/chat',
+//         icon: MessageCircleIcon,
+//         info: () => (
+//           <Chip
+//             color="secondary"
+//             size="small"
+//             label="Updated"
+//           />
+//         )
+//       },
+//       {
+//         title: 'Calendar',
+//         href: '/app/calendar',
+//         icon: CalendarIcon,
+//         info: () => (
+//           <Chip
+//             color="secondary"
+//             size="small"
+//             label="Updated"
+//           />
+//         )
+//       }
+//     ]
+//   },
+//   {
+//     subheader: 'Auth',
+//     items: [
+//       {
+//         title: 'Login',
+//         href: '/login-unprotected',
+//         icon: LockIcon
+//       },
+//       {
+//         title: 'Register',
+//         href: '/register-unprotected',
+//         icon: UserPlusIcon
+//       }
+//     ]
+//   },
+//   {
+//     subheader: 'Pages',
+//     items: [
+//       {
+//         title: 'Account',
+//         href: '/app/account',
+//         icon: UserIcon
+//       },
+//       {
+//         title: 'Error',
+//         href: '/404',
+//         icon: AlertCircleIcon
+//       },
+//       {
+//         title: 'Pricing',
+//         href: '/pricing',
+//         icon: DollarSignIcon
+//       }
+//     ]
+//   },
+//   {
+//     subheader: 'Extra',
+//     items: [
+//       {
+//         title: 'Charts',
+//         href: '/app/extra/charts',
+//         icon: BarChartIcon,
+//         items: [
+//           {
+//             title: 'Apex Charts',
+//             href: '/app/extra/charts/apex'
+//           }
+//         ]
+//       },
+//       {
+//         title: 'Forms',
+//         href: '/app/extra/forms',
+//         icon: EditIcon,
+//         items: [
+//           {
+//             title: 'Formik',
+//             href: '/app/extra/forms/formik'
+//           },
+//           {
+//             title: 'Redux Forms',
+//             href: '/app/extra/forms/redux'
+//           },
+//         ]
+//       },
+//       {
+//         title: 'Editors',
+//         href: '/app/extra/editors',
+//         icon: LayoutIcon,
+//         items: [
+//           {
+//             title: 'DraftJS Editor',
+//             href: '/app/extra/editors/draft-js'
+//           },
+//           {
+//             title: 'Quill Editor',
+//             href: '/app/extra/editors/quill'
+//           }
+//         ]
+//       }
+//     ]
+//   }
+// ];
 
 function renderNavItems({
   items,
@@ -311,10 +315,12 @@ function reduceChildRoutes({
   const key = item.title + depth;
 
   if (item.items) {
-    const open = matchPath(pathname, {
+    let open = matchPath(pathname, {
       path: item.href,
       exact: false
     });
+
+    if (item.openByDefault) open = true
 
     acc.push(
       <NavItem
@@ -368,6 +374,7 @@ const NavBar = ({ onMobileClose, openMobile }) => {
   const classes = useStyles();
   const location = useLocation();
   const { user } = useAuth();
+  const algorithms = useSelector(state => algorithmsSelector(state))
 
   useEffect(() => {
     if (openMobile && onMobileClose) {
@@ -375,6 +382,23 @@ const NavBar = ({ onMobileClose, openMobile }) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname]);
+
+  let items = []
+  for (const algorithm of algorithms){
+    items.push(
+      {
+        title: algorithm.name,
+        href: `/algorithms/${algorithm.id}`
+      }
+    )
+  }
+
+  const sections = [
+    {
+      subheader: 'Algorithms',
+      items: items,
+    }
+  ]
 
   const content = (
     <Box
@@ -456,29 +480,29 @@ const NavBar = ({ onMobileClose, openMobile }) => {
             </List>
           ))}
         </Box>
-        <Divider />
-        <Box p={2}>
-          <Box
-            p={2}
-            borderRadius="borderRadius"
-            bgcolor="background.dark"
-          >
-            <Typography
-              variant="h6"
-              color="textPrimary"
-            >
-              Need Help?
-            </Typography>
-            <Link
-              variant="subtitle1"
-              color="secondary"
-              component={RouterLink}
-              to="/docs"
-            >
-              Check our docs
-            </Link>
-          </Box>
-        </Box>
+        {/*<Divider />*/}
+        {/*<Box p={2}>*/}
+        {/*  <Box*/}
+        {/*    p={2}*/}
+        {/*    borderRadius="borderRadius"*/}
+        {/*    bgcolor="background.dark"*/}
+        {/*  >*/}
+        {/*    <Typography*/}
+        {/*      variant="h6"*/}
+        {/*      color="textPrimary"*/}
+        {/*    >*/}
+        {/*      Need Help?*/}
+        {/*    </Typography>*/}
+        {/*    <Link*/}
+        {/*      variant="subtitle1"*/}
+        {/*      color="secondary"*/}
+        {/*      component={RouterLink}*/}
+        {/*      to="/docs"*/}
+        {/*    >*/}
+        {/*      Check our docs*/}
+        {/*    </Link>*/}
+        {/*  </Box>*/}
+        {/*</Box>*/}
       </PerfectScrollbar>
     </Box>
   );

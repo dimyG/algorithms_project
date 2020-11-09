@@ -18,7 +18,7 @@ const GetAlgorithms = () => {
     if (getAllStatus === 'idle'){
       const promise = getItems()
     }
-  }, [])
+  }, [getAllStatus, dispatch]) // I'm not sure if dispatch needs to be in the dependencies array
 
   return null
 }
