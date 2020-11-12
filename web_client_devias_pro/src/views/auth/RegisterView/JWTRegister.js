@@ -28,17 +28,21 @@ const JWTRegister = ({ className, ...rest }) => {
   return (
     <Formik
       initialValues={{
-        email: '',
-        name: '',
-        password: '',
-        policy: false,
+        email: 'test@test.com',
+        // name: '',
+        password1: '',
+        password2: '',
+        // policy: false,
         submit: null
       }}
       validationSchema={Yup.object().shape({
         email: Yup.string().email('Must be a valid email').max(255).required('Email is required'),
-        name: Yup.string().max(255).required('Name is required'),
-        password: Yup.string().min(7).max(255).required('Password is required'),
-        policy: Yup.boolean().oneOf([true], 'This field must be checked')
+        // name: Yup.string().max(255).required('Name is required'),
+        password1: Yup.string().min(7).max(255).required('Password is required'),
+        password2: Yup.string().min(7).max(255)
+          .oneOf([Yup.ref('password1'), null], "Passwords do not match!")
+          .required('Confirmation Password is required'),
+        // policy: Yup.boolean().oneOf([true], 'This field must be checked')
       })}
       onSubmit={async (values, {
         setErrors,
@@ -46,7 +50,8 @@ const JWTRegister = ({ className, ...rest }) => {
         setSubmitting
       }) => {
         try {
-          await register(values.email, values.name, values.password);
+          // await register(values.email, values.name, values.password);
+          await register(values.email, values.password1, values.password2);
 
           if (isMountedRef.current) {
             setStatus({ success: true });
@@ -75,18 +80,18 @@ const JWTRegister = ({ className, ...rest }) => {
           onSubmit={handleSubmit}
           {...rest}
         >
-          <TextField
-            error={Boolean(touched.name && errors.name)}
-            fullWidth
-            helperText={touched.name && errors.name}
-            label="Name"
-            margin="normal"
-            name="name"
-            onBlur={handleBlur}
-            onChange={handleChange}
-            value={values.name}
-            variant="outlined"
-          />
+          {/*<TextField*/}
+          {/*  error={Boolean(touched.name && errors.name)}*/}
+          {/*  fullWidth*/}
+          {/*  helperText={touched.name && errors.name}*/}
+          {/*  label="Name"*/}
+          {/*  margin="normal"*/}
+          {/*  name="name"*/}
+          {/*  onBlur={handleBlur}*/}
+          {/*  onChange={handleChange}*/}
+          {/*  value={values.name}*/}
+          {/*  variant="outlined"*/}
+          {/*/>*/}
           <TextField
             error={Boolean(touched.email && errors.email)}
             fullWidth
@@ -101,49 +106,62 @@ const JWTRegister = ({ className, ...rest }) => {
             variant="outlined"
           />
           <TextField
-            error={Boolean(touched.password && errors.password)}
+            error={Boolean(touched.password1 && errors.password1)}
             fullWidth
-            helperText={touched.password && errors.password}
+            helperText={touched.password1 && errors.password1}
             label="Password"
             margin="normal"
-            name="password"
+            name="password1"
             onBlur={handleBlur}
             onChange={handleChange}
             type="password"
             value={values.password}
             variant="outlined"
           />
-          <Box
-            alignItems="center"
-            display="flex"
-            mt={2}
-            ml={-1}
-          >
-            <Checkbox
-              checked={values.policy}
-              name="policy"
-              onChange={handleChange}
-            />
-            <Typography
-              variant="body2"
-              color="textSecondary"
-            >
-              I have read the
-              {' '}
-              <Link
-                component="a"
-                href="#"
-                color="secondary"
-              >
-                Terms and Conditions
-              </Link>
-            </Typography>
-          </Box>
-          {Boolean(touched.policy && errors.policy) && (
-            <FormHelperText error>
-              {errors.policy}
-            </FormHelperText>
-          )}
+          <TextField
+            error={Boolean(touched.password2 && errors.password2)}
+            fullWidth
+            helperText={touched.password2 && errors.password2}
+            label="Confirm Password"
+            margin="normal"
+            name="password2"
+            onBlur={handleBlur}
+            onChange={handleChange}
+            type="password"
+            value={values.password}
+            variant="outlined"
+          />
+          {/*<Box*/}
+          {/*  alignItems="center"*/}
+          {/*  display="flex"*/}
+          {/*  mt={2}*/}
+          {/*  ml={-1}*/}
+          {/*>*/}
+          {/*  <Checkbox*/}
+          {/*    checked={values.policy}*/}
+          {/*    name="policy"*/}
+          {/*    onChange={handleChange}*/}
+          {/*  />*/}
+          {/*  <Typography*/}
+          {/*    variant="body2"*/}
+          {/*    color="textSecondary"*/}
+          {/*  >*/}
+          {/*    I have read the*/}
+          {/*    {' '}*/}
+          {/*    <Link*/}
+          {/*      component="a"*/}
+          {/*      href="#"*/}
+          {/*      color="secondary"*/}
+          {/*    >*/}
+          {/*      Terms and Conditions*/}
+          {/*    </Link>*/}
+          {/*  </Typography>*/}
+          {/*</Box>*/}
+          {/*{Boolean(touched.policy && errors.policy) && (*/}
+          {/*  <FormHelperText error>*/}
+          {/*    {errors.policy}*/}
+          {/*  </FormHelperText>*/}
+          {/*)}*/}
           {errors.submit && (
             <Box mt={3}>
               <FormHelperText error>

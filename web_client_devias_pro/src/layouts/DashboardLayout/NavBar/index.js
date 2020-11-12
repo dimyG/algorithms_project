@@ -37,7 +37,8 @@ import {
   PieChart as PieChartIcon,
   Share2 as ShareIcon,
   Users as UsersIcon,
-  Command as CommandIcon
+  Command as CommandIcon,
+  List as ListIcon
 } from 'react-feather';
 import Logo from 'src/components/Logo';
 import useAuth from 'src/hooks/useAuth';
@@ -395,10 +396,21 @@ const NavBar = ({ onMobileClose, openMobile }) => {
 
   const sections = [
     {
-      subheader: 'Algorithms',
+      subheader: '',
       items: items,
     }
   ]
+
+  if (user) {
+    sections.push({
+      subheader: '',
+      items: [{
+        title: 'Algorithms',
+        icon: ListIcon,
+        href: '/algorithms/list'
+      }]
+    })
+  }
 
   const content = (
     <Box
@@ -418,52 +430,56 @@ const NavBar = ({ onMobileClose, openMobile }) => {
             </RouterLink>
           </Box>
         </Hidden>
-        {/*<Box p={2}>*/}
-        {/*  <Box*/}
-        {/*    display="flex"*/}
-        {/*    justifyContent="center"*/}
-        {/*  >*/}
-        {/*    <RouterLink to="/app/account">*/}
-        {/*      <Avatar*/}
-        {/*        alt="User"*/}
-        {/*        className={classes.avatar}*/}
-        {/*        src={user.avatar}*/}
-        {/*      />*/}
-        {/*    </RouterLink>*/}
-        {/*  </Box>*/}
-        {/*  <Box*/}
-        {/*    mt={2}*/}
-        {/*    textAlign="center"*/}
-        {/*  >*/}
-        {/*    <Link*/}
-        {/*      component={RouterLink}*/}
-        {/*      to="/app/account"*/}
-        {/*      variant="h5"*/}
-        {/*      color="textPrimary"*/}
-        {/*      underline="none"*/}
-        {/*    >*/}
-        {/*      {user.name}*/}
-        {/*    </Link>*/}
-        {/*    <Typography*/}
-        {/*      variant="body2"*/}
-        {/*      color="textSecondary"*/}
-        {/*    >*/}
-        {/*      Your tier:*/}
-        {/*      {' '}*/}
-        {/*      <Link*/}
-        {/*        component={RouterLink}*/}
-        {/*        to="/pricing"*/}
-        {/*      >*/}
-        {/*        {user.tier}*/}
-        {/*      </Link>*/}
-        {/*    </Typography>*/}
-        {/*  </Box>*/}
-        {/*</Box>*/}
+        {user ? (
+          <Box p={2}>
+            <Box
+              display="flex"
+              justifyContent="center"
+            >
+              {/*<RouterLink to="/app/account">*/}
+                <Avatar
+                  alt="User"
+                  className={classes.avatar}
+                  src={user.avatar}
+                />
+              {/*</RouterLink>*/}
+            </Box>
+            <Box
+              mt={2}
+              textAlign="center"
+            >
+              <Typography>{user.email}</Typography>
+              {/*<Link*/}
+              {/*  component={RouterLink}*/}
+              {/*  to="/app/account"*/}
+              {/*  variant="h5"*/}
+              {/*  color="textPrimary"*/}
+              {/*  underline="none"*/}
+              {/*>*/}
+              {/*  {user.name}*/}
+              {/*</Link>*/}
+
+              {/*<Typography*/}
+              {/*  variant="body2"*/}
+              {/*  color="textSecondary"*/}
+              {/*>*/}
+              {/*  Your tier:*/}
+              {/*  {' '}*/}
+              {/*  <Link*/}
+              {/*    component={RouterLink}*/}
+              {/*    to="/pricing"*/}
+              {/*  >*/}
+              {/*    {user.tier}*/}
+              {/*  </Link>*/}
+              {/*</Typography>*/}
+            </Box>
+          </Box>
+        ) : null }
         <Divider />
         <Box p={2}>
           {sections.map((section) => (
             <List
-              key={section.subheader}
+              key={section.subheader + nanoid()}
               subheader={(
                 <ListSubheader
                   disableGutters

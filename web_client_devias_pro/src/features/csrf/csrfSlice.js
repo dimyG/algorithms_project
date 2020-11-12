@@ -7,14 +7,14 @@ const csrfSlice = createSlice({
         'token': null
     },
     reducers: {
-        get: state => {
+        readFromCookie: state => {
             // read the csrf token value from the cookie stored in the browser
             state.token = Cookies.get('csrftoken') || null  // undefined value caused state to be an empty object {} instead of {token: undefined}
         }
     },
 })
 
-export const {get} = csrfSlice.actions
+export const {readFromCookie} = csrfSlice.actions
 export default csrfSlice.reducer
 
 export const csrfSelector = state => state.csrf.token

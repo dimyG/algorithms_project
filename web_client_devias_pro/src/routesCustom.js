@@ -60,13 +60,30 @@ const routes = [
     path: '/login',
     component: lazy(() => import('src/views/auth/LoginView'))
   },
-    {
+  {
+    exact: true,
+    path: '/login-unprotected',
+    component: lazy(() => import('src/views/auth/LoginView'))
+  },
+  {
+    exact: true,
+    guard: GuestGuard,
+    path: '/register',
+    component: lazy(() => import('src/views/auth/RegisterView'))
+  },
+  {
+    exact: true,
+    path: '/register-unprotected',
+    component: lazy(() => import('src/views/auth/RegisterView'))
+  },
+  {
     path: '/algorithms',
+    guard: AuthGuard,
     layout: DashboardLayout,
     routes: [
       {
         exact: true,
-        path: '/algorithms',
+        path: '/algorithms/list',
         component: AlgorithmsListView
       },
       {
@@ -84,8 +101,8 @@ const routes = [
   {
     path: '*',
     // guard: AuthGuard,
-    // todo Notice that I have commented out the parts of TopBar and Navbar (rendered by the DashboardLayout) that use a user.
-    // this way even unauthenticated users can view the DashboardLayout. Re-enable them when you implement authentication
+    // Notice that I have changed TopBar and Navbar (rendered by the DashboardLayout) so that they can be rendered
+    // without a logged in user (without a user object)
     layout: DashboardLayout,
     routes: [
       {

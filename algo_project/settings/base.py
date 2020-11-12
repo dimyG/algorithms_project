@@ -30,9 +30,18 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'django.contrib.sites',
     'rest_framework',
+    'rest_framework.authtoken',
+    'allauth',
+    'allauth.account',
+    # 'allauth.socialaccount',
+    'dj_rest_auth',
+    'dj_rest_auth.registration',
     'algorithms',
 ]
+
+SITE_ID = 1
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -102,14 +111,34 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-# REST_FRAMEWORK = {
-#     # Use Django's standard `django.contrib.auth` permissions,
-#     # or allow read-only access for unauthenticated users.
-#     'DEFAULT_PERMISSION_CLASSES': [
-#         'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
-#     ],
-#     'DEFAULT_AUTHENTICATION_CLASSES': [
-#         'rest_framework.authentication.BasicAuthentication',
-#         'rest_framework.authentication.SessionAuthentication',
-#     ]
-# }
+AUTHENTICATION_BACKENDS = (
+    # Needed to login by username in Django admin, regardless of `allauth`
+    "django.contrib.auth.backends.ModelBackend",
+    # The following allauth setting needs to be present in order for allauth authentication to work properly.
+    # `allauth` specific authentication methods, such as login by e-mail
+    "allauth.account.auth_backends.AuthenticationBackend"
+)
+
+REST_FRAMEWORK = {
+    # # Use Django's standard `django.contrib.auth` permissions,
+    # # or allow read-only access for unauthenticated users.
+    # 'DEFAULT_PERMISSION_CLASSES': [
+    #     'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+    # ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        # 'rest_framework.authentication.BasicAuthentication',
+        # 'rest_framework.authentication.SessionAuthentication',
+        'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
+    ]
+}
+
+# dj-rest-auth settings
+REST_USE_JWT = True
+JWT_AUTH_COOKIE = 'algo_project_auth'
+
+# django-allauth settings
+ACCOUNT_EMAIL_VERIFICATION = 'none'  # log in with an unverified e-mail address
+# ACCOUNT_EMAIL_CONFIRMATION_HMAC = False  # do not mail a key identifying the email address to be verified
+ACCOUNT_AUTHENTICATION_METHOD = 'username_email'  # log in either with username or email
+ACCOUNT_EMAIL_REQUIRED = True  # require email on sign up
+ACCOUNT_USERNAME_REQUIRED = False  # require username on sign up

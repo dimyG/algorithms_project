@@ -13,7 +13,7 @@ import time
 class AlgorithmMixin(object):
     queryset = Algorithm.objects.all()
     serializer_class = AlgorithmSerializer
-    # permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
 
 
 decorators = [csrf_protect]

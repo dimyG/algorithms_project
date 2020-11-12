@@ -17,6 +17,7 @@ async function long(){
 // with a RejectWithValue argument as returned by the thunkAPI.rejectWithValue function. The RejectWithValue
 // approach is the only way I found to get the server generated error message (for example item with this name already exists)
 export const getAlgorithmsThunk = createAsyncThunk('algorithms/get', async (dummy, {rejectWithValue}) => {
+  // const response = await axios.get('/algorithms/')
   try {
     const response = await axios.get('/algorithms/')
     // console.log('getAlgorithmsThunk response:', response)
@@ -41,16 +42,27 @@ export const createAlgorithmThunk = createAsyncThunk('algorithms/create', async 
     store.dispatch(algorithmsSlice.actions.addMessage({text: successMessage, mode: "success", seen: false}))
     return response.data
   }catch (error) {
-    // console.log('createAlgorithmThunk error:', error, 'error.response:', error.response, 'error.response.data', error.response.data)
-    // error.response is an object with config, data, headers, request, status and statusText attributes
-
-    // in case of 403, for example csrf error, then return the given message instead of the error data which is an html page
-    const forbidden_msg = "Your request was forbidden"
+    // todo handle all action errors (get, create, update etc.) the same way (if error.response, if else error.request, else)
     let error_payload
-    error.response.status === 403 ? error_payload = forbidden_msg : error_payload = error.response.data
-    store.dispatch(algorithmsSlice.actions.addMessage({text: JSON.stringify(error_payload), mode: "error", seen: false}))
+    if (error.response){
+      // Request was made and the server responded
+      // error.response is an object with config, data, headers, request, status and statusText attributes
+      // in case of 403, for example csrf error, then return the given message instead of the error data which is an html page
+      const forbidden_msg = "Your request was forbidden"
+      error.response.status === 403 ? error_payload = forbidden_msg : error_payload = error.response.data
+    } else if (error.request) {
+      // Request was made but no response received
+      // console.log("error.request:", error.request)
+      error_payload = error.request
+    } else {
+      // Request was not made, something happened in setting up the request
+      // console.log("error.message:", error.message)
+      error_payload = error.message
+    }
+    store.dispatch(addMessage({text: JSON.stringify(error_payload), mode: 'error', seen: false}))
     return rejectWithValue(error_payload)
   }
+
     // this is a stackoverflow answer for handling django validation error's and more. An equivalent
     // approach could be used with the async/await syntax instead of .then and the use of rejectWithValue
     // axios.post('/algorithms/', body, config)
@@ -84,12 +96,12 @@ export const updateAlgorithmThunk = createAsyncThunk("algorithms/update", async 
   try {
     // the trailing slash is needed by django in PUT requests
     const response = await axios.put(`/algorithms/${id}/`, body, config)
-    console.log("edit algorithm thunk response:", response)
+    // console.log("edit algorithm thunk response:", response)
     const successMessage = `algorithm ${response.data.name} updated successfully`
     store.dispatch(algorithmsSlice.actions.addMessage({text: successMessage, mode: "success", seen: false}))
     return response.data
   } catch (error) {
-    console.log("edit algorithm thunk error:", JSON.stringify(error))
+    // console.log("edit algorithm thunk error:", JSON.stringify(error))
     store.dispatch(algorithmsSlice.actions.addMessage({text: JSON.stringify(error.message), mode: "error", seen: false}))
     return rejectWithValue(error.message)
   }
@@ -307,6 +319,6 @@ export const getStatusSelector = state => state.algorithms.get.status
 // export const deleteManyStatusSelector = state => state.algorithms.delete_many.status
 // export const deleteManyErrorSelector = state => state.algorithms.delete_many.error
 
-export const {markMessageSeen}  = algorithmsSlice.actions
+export const {addMessage, markMessageSeen} = algorithmsSlice.actions
 
 export default algorithmsSlice.reducer

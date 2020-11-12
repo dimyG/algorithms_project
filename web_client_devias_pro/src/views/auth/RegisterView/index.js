@@ -74,76 +74,76 @@ const RegisterView = () => {
       className={classes.root}
       title="Register"
     >
-      <div className={classes.banner}>
-        <Container maxWidth="md">
-          <Box
-            alignItems="center"
-            display="flex"
-            justifyContent="center"
-          >
-            <Chip
-              color="secondary"
-              label="NEW"
-              size="small"
-              className={classes.bannerChip}
-            />
-            <Box
-              alignItems="center"
-              display="flex"
-            >
-              <Typography
-                color="textPrimary"
-                variant="h6"
-              >
-                Visit our
-                {' '}
-                <Link
-                  component={RouterLink}
-                  to="/docs"
-                >
-                  docs
-                </Link>
-                {' '}
-                and find out how to switch between
-              </Typography>
-              <Tooltip title="Auth0">
-                <img
-                  alt="Auth0"
-                  className={classes.methodIcon}
-                  src={methodIcons['Auth0']}
-                />
-              </Tooltip>
-              <Tooltip title="Firebase">
-                <img
-                  alt="Firebase"
-                  className={classes.methodIcon}
-                  src={methodIcons['FirebaseAuth']}
-                />
-              </Tooltip>
-              <Tooltip title="JSON Web Token">
-                <img
-                  alt="JWT"
-                  className={classes.methodIcon}
-                  src={methodIcons['JWT']}
-                />
-              </Tooltip>
-            </Box>
-          </Box>
-        </Container>
-      </div>
+      {/*<div className={classes.banner}>*/}
+      {/*  <Container maxWidth="md">*/}
+      {/*    <Box*/}
+      {/*      alignItems="center"*/}
+      {/*      display="flex"*/}
+      {/*      justifyContent="center"*/}
+      {/*    >*/}
+      {/*      <Chip*/}
+      {/*        color="secondary"*/}
+      {/*        label="NEW"*/}
+      {/*        size="small"*/}
+      {/*        className={classes.bannerChip}*/}
+      {/*      />*/}
+      {/*      <Box*/}
+      {/*        alignItems="center"*/}
+      {/*        display="flex"*/}
+      {/*      >*/}
+      {/*        <Typography*/}
+      {/*          color="textPrimary"*/}
+      {/*          variant="h6"*/}
+      {/*        >*/}
+      {/*          Visit our*/}
+      {/*          {' '}*/}
+      {/*          <Link*/}
+      {/*            component={RouterLink}*/}
+      {/*            to="/docs"*/}
+      {/*          >*/}
+      {/*            docs*/}
+      {/*          </Link>*/}
+      {/*          {' '}*/}
+      {/*          and find out how to switch between*/}
+      {/*        </Typography>*/}
+      {/*        <Tooltip title="Auth0">*/}
+      {/*          <img*/}
+      {/*            alt="Auth0"*/}
+      {/*            className={classes.methodIcon}*/}
+      {/*            src={methodIcons['Auth0']}*/}
+      {/*          />*/}
+      {/*        </Tooltip>*/}
+      {/*        <Tooltip title="Firebase">*/}
+      {/*          <img*/}
+      {/*            alt="Firebase"*/}
+      {/*            className={classes.methodIcon}*/}
+      {/*            src={methodIcons['FirebaseAuth']}*/}
+      {/*          />*/}
+      {/*        </Tooltip>*/}
+      {/*        <Tooltip title="JSON Web Token">*/}
+      {/*          <img*/}
+      {/*            alt="JWT"*/}
+      {/*            className={classes.methodIcon}*/}
+      {/*            src={methodIcons['JWT']}*/}
+      {/*          />*/}
+      {/*        </Tooltip>*/}
+      {/*      </Box>*/}
+      {/*    </Box>*/}
+      {/*  </Container>*/}
+      {/*</div>*/}
       <Container
         className={classes.cardContainer}
         maxWidth="sm"
       >
-        <Box
-          mb={8}
-          display="flex"
-          justifyContent="center"
-        >
-          <RouterLink to="/">
-            <Logo />
-          </RouterLink>
-        </Box>
+        {/*<Box*/}
+        {/*  mb={8}*/}
+        {/*  display="flex"*/}
+        {/*  justifyContent="center"*/}
+        {/*>*/}
+        {/*  <RouterLink to="/">*/}
+        {/*    <Logo />*/}
+        {/*  </RouterLink>*/}
+        {/*</Box>*/}
         <Card>
           <CardContent className={classes.cardContent}>
             <Box
@@ -160,18 +160,21 @@ const RegisterView = () => {
                 >
                   Register
                 </Typography>
-                <Typography
-                  variant="body2"
-                  color="textSecondary"
-                >
-                  Register on the internal platform
-                </Typography>
+                {/*<Typography*/}
+                {/*  variant="body2"*/}
+                {/*  color="textSecondary"*/}
+                {/*>*/}
+                {/*  Register on the internal platform*/}
+                {/*</Typography>*/}
               </div>
               <div className={classes.currentMethodIcon}>
-                <img
-                  alt="Auth method"
-                  src={methodIcons[method]}
-                />
+                {/*<img*/}
+                {/*  alt="Auth method"*/}
+                {/*  src={methodIcons[method]}*/}
+                {/*/>*/}
+                  <RouterLink to="/">
+                    <Logo />
+                  </RouterLink>
               </div>
             </Box>
             <Box

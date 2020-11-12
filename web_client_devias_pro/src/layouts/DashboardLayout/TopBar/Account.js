@@ -92,18 +92,18 @@ const Account = () => {
         anchorEl={ref.current}
         open={isOpen}
       >
-        <MenuItem
-          component={RouterLink}
-          to="/app/social/profile"
-        >
-          Profile
-        </MenuItem>
-        <MenuItem
-          component={RouterLink}
-          to="/app/account"
-        >
-          Account
-        </MenuItem>
+        {/*<MenuItem*/}
+        {/*  component={RouterLink}*/}
+        {/*  to="/app/social/profile"*/}
+        {/*>*/}
+        {/*  Profile*/}
+        {/*</MenuItem>*/}
+        {/*<MenuItem*/}
+        {/*  component={RouterLink}*/}
+        {/*  to="/app/account"*/}
+        {/*>*/}
+        {/*  Account*/}
+        {/*</MenuItem>*/}
         <MenuItem onClick={handleLogout}>
           Logout
         </MenuItem>

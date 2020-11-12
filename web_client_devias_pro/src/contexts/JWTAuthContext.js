@@ -5,12 +5,23 @@ import React, {
 } from 'react';
 import jwtDecode from 'jwt-decode';
 import SplashScreen from 'src/components/SplashScreen';
-import axios from 'src/utils/axios';
+// import axios from 'src/utils/axios';
+import axios from "axios"
+import {useDispatch} from "react-redux";
+import {addMessage} from "../features/algorithms/algorithmsSlice";
+import {readFromCookie} from "../features/csrf/csrfSlice";
+
+// const initialUser = {
+//   name: null,
+//   avatar: null
+// }
+
+const initialUser = null
 
 const initialAuthState = {
   isAuthenticated: false,
   isInitialised: false,
-  user: null
+  user: initialUser
 };
 
 const isValidToken = (accessToken) => {
@@ -59,7 +70,7 @@ const reducer = (state, action) => {
       return {
         ...state,
         isAuthenticated: false,
-        user: null
+        user: initialUser
       };
     }
     case 'REGISTER': {
@@ -87,41 +98,69 @@ const AuthContext = createContext({
 
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialAuthState);
+  const reduxDispatch = useDispatch()
 
   const login = async (email, password) => {
-    const response = await axios.post('/api/account/login', { email, password });
-    const { accessToken, user } = response.data;
+    // const response = await axios.post('/api/account/login', { email, password });
+    try {
+      const response = await axios.post('/dj-rest-auth/login/', {email, password});
+      const {access_token, user} = response.data;
 
-    setSession(accessToken);
-    dispatch({
-      type: 'LOGIN',
-      payload: {
-        user
-      }
-    });
+      // patch the user read from server response, to match the user object as it is expected by the devias pro template
+      // todo make patching better
+      user.name = user.username
+      user.avatar = null
+      const accessToken = access_token
+
+      reduxDispatch(readFromCookie())
+      setSession(accessToken);
+      dispatch({
+        type: 'LOGIN',
+        payload: {
+          user
+        }
+      });
+    }catch (error) {
+      reduxDispatch(addMessage({text: `${error}`, mode: "error", seen: false}))
+    }
   };
 
-  const logout = () => {
-    setSession(null);
-    dispatch({ type: 'LOGOUT' });
+  const logout = async () => {
+    try {
+      const response = await axios.post('/dj-rest-auth/logout/');
+      setSession(null);
+      dispatch({ type: 'LOGOUT' });
+    } catch (error) {
+      reduxDispatch(addMessage({text: `${error}`, mode: "error", seen: false}))
+    }
   };
 
-  const register = async (email, name, password) => {
-    const response = await axios.post('/api/account/register', {
-      email,
-      name,
-      password
-    });
-    const { accessToken, user } = response.data;
+  const register = async (email, password1, password2) => {
+    try {
+      const response = await axios.post('/dj-rest-auth/registration/', {
+        email: email,
+        // name,
+        password1: password1,
+        password2: password2,
+      });
+      const {accessToken, user} = response.data;
 
-    window.localStorage.setItem('accessToken', accessToken);
+      window.localStorage.setItem('accessToken', accessToken);
 
-    dispatch({
-      type: 'REGISTER',
-      payload: {
-        user
+      dispatch({
+        type: 'REGISTER',
+        payload: {
+          user
+        }
+      });
+    } catch (error) {
+      console.log("register error:", typeof(error), error.message)
+      let errorTextMessage
+      if (error.response){
+        errorTextMessage = JSON.stringify(error.response.data)
       }
-    });
+      reduxDispatch(addMessage({text: errorTextMessage, mode: "error", seen: false}))
+    }
   };
 
   useEffect(() => {
@@ -147,7 +186,7 @@ export const AuthProvider = ({ children }) => {
             type: 'INITIALISE',
             payload: {
               isAuthenticated: false,
-              user: null
+              user: initialUser
             }
           });
         }
@@ -157,7 +196,7 @@ export const AuthProvider = ({ children }) => {
           type: 'INITIALISE',
           payload: {
             isAuthenticated: false,
-            user: null
+            user: initialUser
           }
         });
       }

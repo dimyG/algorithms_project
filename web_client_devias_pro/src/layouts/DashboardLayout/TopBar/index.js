@@ -9,9 +9,10 @@ import {
   IconButton,
   Toolbar,
   makeStyles,
-  SvgIcon
+  SvgIcon,
+  Button, Typography
 } from '@material-ui/core';
-import { Menu as MenuIcon } from 'react-feather';
+import {Menu as MenuIcon, LogIn as LoginIcon} from 'react-feather';
 import Logo from 'src/components/Logo';
 import { THEMES } from 'src/constants';
 import Account from './Account';
@@ -19,6 +20,7 @@ import Contacts from './Contacts';
 import Notifications from './Notifications';
 import Search from './Search';
 import Settings from './Settings';
+import useAuth from "../../../hooks/useAuth";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -33,8 +35,63 @@ const useStyles = makeStyles((theme) => ({
   },
   toolbar: {
     minHeight: 64
+  },
+  topBarButton: {
+    boxShadow: "none",
+    marginLeft: theme.spacing(1),
+    marginRight: theme.spacing(1)
   }
 }));
+
+const Login = () => {
+  const classes = useStyles()
+  const { user } = useAuth()
+
+  if (user){
+    return null
+  }
+
+  return (
+    <Button
+      component={RouterLink}
+      to="/login"
+      color="primary"
+      variant="contained"
+      className={classes.topBarButton}
+      size='small'
+      startIcon={
+        <SvgIcon fontSize="small">
+          <LoginIcon />
+        </SvgIcon>
+      }
+    >
+      Login
+    </Button>
+  )
+}
+
+const Register = () => {
+  const classes = useStyles()
+  const { user } = useAuth()
+
+  if (user){
+    return null
+  }
+
+  return (
+
+    <Button
+      component={RouterLink}
+      to="/register"
+      color="secondary"
+      variant="text"
+      className={classes.topBarButton}
+      size='small'
+    >
+      <Box color="white">Register</Box>
+    </Button>
+  )
+}
 
 const TopBar = ({
   className,
@@ -42,6 +99,7 @@ const TopBar = ({
   ...rest
 }) => {
   const classes = useStyles();
+  const { user } = useAuth();
 
   return (
     <AppBar
@@ -68,13 +126,17 @@ const TopBar = ({
           ml={2}
           flexGrow={1}
         />
-        <Search />
-        <Contacts />
-        <Notifications />
+        {/*<Search />*/}
+        {/*<Contacts />*/}
+        {/*<Notifications />*/}
+        <Login/>
+        <Register/>
         <Settings />
-        {/*<Box ml={2}>*/}
-        {/*  <Account />*/}
-        {/*</Box>*/}
+        { user? (
+          <Box ml={2}>
+            <Account />
+          </Box>
+        ) : null }
       </Toolbar>
     </AppBar>
   );
