@@ -398,6 +398,15 @@ const NavBar = ({ onMobileClose, openMobile }) => {
     {
       subheader: '',
       items: items,
+    },
+    {
+      subheader: '',
+      items: [
+        {
+          title: 'Animation',
+          href: '/animation'
+        }
+      ]
     }
   ]
 

@@ -18,6 +18,7 @@ import GuestGuard from 'src/components/GuestGuard';
 import HomePageCustom from "./homePageCustom";
 import AlgorithmCreateUpdate from "./features/algorithms/AlgorithmCreateUpdate";
 import AlgorithmsListView from "./features/algorithms/AlgorithmsListView";
+import Circle from "./features/algorithms/Circle";
 
 export const renderRoutes = (routes = []) => (
   <Suspense fallback={<LoadingScreen />}>
@@ -109,6 +110,11 @@ const routes = [
         exact: true,
         path: '/',
         component: AlgorithmsListView
+      },
+      {
+        exact: true,
+        path: '/animation',
+        component: Circle
       },
       {
         component: () => <Redirect to="/404" />
