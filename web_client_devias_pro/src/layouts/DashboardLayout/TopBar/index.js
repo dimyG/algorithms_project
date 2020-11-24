@@ -55,7 +55,7 @@ const Login = () => {
     <Button
       component={RouterLink}
       to="/login"
-      color="primary"
+      color="secondary"
       variant="contained"
       className={classes.topBarButton}
       size='small'

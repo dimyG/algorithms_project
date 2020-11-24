@@ -1,9 +1,21 @@
 import React, {useEffect, useRef, useState} from "react";
 import * as d3 from "d3"
-import {Button, Card, SvgIcon, TextField} from "@material-ui/core";
+import {
+  Box,
+  Button,
+  Card, CardContent,
+  CardHeader,
+  Container,
+  Divider,
+  Grid,
+  makeStyles,
+  SvgIcon,
+  TextField
+} from "@material-ui/core";
 import clsx from "clsx";
 import {Link as RouterLink} from "react-router-dom";
-import {PlusCircle as PlusCircleIcon} from "react-feather";
+import {Play as PlayIcon, Pause as PauseIcon, FastForward as FastForwardIcon, RefreshCw as RefreshCwIcon, PlusCircle as PlusCircleIcon} from "react-feather";
+import Page from "../../components/Page";
 
 function useInterval(callback, delay) {
   const savedCallback = useRef();
@@ -108,7 +120,7 @@ class DataItems {
     // console.log("  all items After swap:", this.items)
   }
 
-  moveRight = (step = stepRight) => {
+  moveRight = (step = iterationXStep) => {
     // move all non heap items to the right by changing their x coordinate
     this.items = this.items.map((item, index) => {
       if (!item.heapIndex) return {...item, x: item.x + step}
@@ -175,26 +187,20 @@ class DataItems {
     }
   }
 
-  heapsLastIndex = () => {
-    return this.heapItems().length - 1
-  }
+  heapsLastIndex = () => this.heapItems().length - 1
 
-  kid1Index = (heapIndex) => {
-    return heapIndex * 2 + 1
-  }
+  kid1Index = heapIndex => heapIndex * 2 + 1
 
-  kid2Index = (heapIndex) => {
-    return this.kid1Index(heapIndex) + 1
-  }
+  kid2Index = heapIndex => this.kid1Index(heapIndex) + 1
 
-  hasKids = (heapIndex) => {
+  hasKids = heapIndex => {
     // if the items first kid index is less than the last index of the heap, then the item has kids
     return this.kid1Index(heapIndex) <= this.heapsLastIndex()
   }
 
-  firstItemsX = () => {
-    return this.items[0].x
-  }
+  parentIndex = heapIndex => Math.floor(Math.abs(heapIndex - 1) * 0.5)
+
+  firstItemsX = () => this.items[0].x
 
   reheap = (heapIndex= 0) => {
     // todo use the item.heapIndex property to avoid sorting
@@ -216,54 +222,104 @@ class DataItems {
 
 }
 
-const generateRandomDataset = () => (
-  Array(10).fill(0).map(() => ([
-    Math.random() * 80 + 10,
-    // Math.random() * 35 + 10,
-    20,
-    "Y"
-  ]))
-)
-
 const numbersLength = 10
 const generateRandomArray = (length, maxValue) => [...new Array(length)].map(() => Math.round(Math.random() * maxValue));
 const randomNumbers = generateRandomArray(numbersLength, 100)
 
-const heapHeadX = 30
-const heapHeadY = 15
-const stepRight = 5
+const svgViewBoxWidth = 100
+const svgViewBoxHeight = 35
+const heapHeadX = svgViewBoxWidth * 0.5
+const heapHeadY = svgViewBoxHeight * 0.5
+const circleRadius = 3
+const heapCircleRadius = circleRadius * 0.9
+const circleTextSize = circleRadius * 0.8
+const itemsXDistance = circleRadius * 2.5
+const iterationXStep = itemsXDistance
+const heapItemsDistance = itemsXDistance * 0.7
 // const lastItemX = heapHeadX - stepRight
-const firstItemX = heapHeadX - stepRight * numbersLength  // so that the last item is one step before the heap head
-const firstItemY = heapHeadY + 5
+const firstItemX = heapHeadX - iterationXStep * numbersLength  // so that the last item is one step before the heap head
+const firstItemY = heapHeadY + 2.1 * circleRadius
+
+// *2 since there are (at most) two animations for each item (move right and compare)
+// +1 since the last item is 1 step from heap head, and +2 to continue 2 steps after all items have been compared with heap head
+const maxIterations = numbersLength * 2 + 1 + 2
+const heapSize = 7
 
 const initialNumberItems = Array(numbersLength).fill(0).map((item, index) => ({
   // the id is needed so that every item object is unique (and items.indexOf(item) returns always the unique item's index)
-  id: index +1, x: firstItemX + index * stepRight, y: firstItemY, parent: null, value: randomNumbers[index], heapIndex: null
+  id: index +1, x: firstItemX + index * itemsXDistance, y: firstItemY, parent: null, value: randomNumbers[index], heapIndex: null
 }))
 
 const initialHeapItems = [
-  {id: initialNumberItems.length+1, x: heapHeadX, y: heapHeadY, parent: {x: heapHeadX, y: heapHeadY}, value: 0, heapIndex: 1},
-  {id: initialNumberItems.length+2, x: heapHeadX-5, y: heapHeadY-5, parent: {x: heapHeadX, y: heapHeadY}, value: 0, heapIndex: 2},
-  {id: initialNumberItems.length+3, x: heapHeadX+5, y: heapHeadY-5, parent: {x: heapHeadX, y: heapHeadY}, value: 0, heapIndex: 3},
-  {id: initialNumberItems.length+4, x: heapHeadX-5-3, y: heapHeadY-5-5, parent: {x: heapHeadX-5, y: heapHeadY-5}, value: 0, heapIndex: 4},
-  {id: initialNumberItems.length+5, x: heapHeadX-5+3, y: heapHeadY-5-5, parent: {x: heapHeadX-5, y: heapHeadY-5}, value: 0, heapIndex: 5},
-  {id: initialNumberItems.length+6, x: heapHeadX+5-3, y: heapHeadY-5-5, parent: {x: heapHeadX+5, y: heapHeadY-5}, value: 0, heapIndex: 6},
-  {id: initialNumberItems.length+7, x: heapHeadX+5+3, y: heapHeadY-5-5, parent: {x: heapHeadX+5, y: heapHeadY-5}, value: 0, heapIndex: 7},
+  {id: initialNumberItems.length+1, x: heapHeadX, y: heapHeadY, value: 0, heapIndex: 1},
+  {id: initialNumberItems.length+2, x: heapHeadX-heapItemsDistance*1.3, y: heapHeadY-heapItemsDistance, value: 0, heapIndex: 2},
+  {id: initialNumberItems.length+3, x: heapHeadX+heapItemsDistance*1.3, y: heapHeadY-heapItemsDistance, value: 0, heapIndex: 3},
+  {id: initialNumberItems.length+4, x: heapHeadX-heapItemsDistance*1.3-circleRadius, y: heapHeadY-heapItemsDistance*2.2, value: 0, heapIndex: 4},
+  {id: initialNumberItems.length+5, x: heapHeadX-heapItemsDistance*1.3+circleRadius, y: heapHeadY-heapItemsDistance*2.2, value: 0, heapIndex: 5},
+  {id: initialNumberItems.length+6, x: heapHeadX+heapItemsDistance*1.3-circleRadius, y: heapHeadY-heapItemsDistance*2.2, value: 0, heapIndex: 6},
+  {id: initialNumberItems.length+7, x: heapHeadX+heapItemsDistance*1.3+circleRadius, y: heapHeadY-heapItemsDistance*2.2, value: 0, heapIndex: 7},
 ]
+
+const createInitialHeapItems = () => {
+  let items = []
+  let x, y
+  for (let i=0; i<heapSize; i++){
+    let layer
+    for (let exp = 0; ; exp++) {
+      // console.log("exp:", exp, "i+1/2**exp", i+1/2**exp, "i+1/Math.abs(2**(exp+1))", i+1/Math.abs(2**(exp+1)))
+      // if (i/2**exp >= 1 && i/2**(exp+1) < 2 || i === 0) {
+      if (2**exp <= i+1 && 2**(exp+1) > i+1 || i === 0) {
+        layer = exp + 1
+        break
+      }
+    }
+    if (i === 0) {
+      x = heapHeadX
+      y = heapHeadY
+    } else {
+      const XDistance = i % 2 === 0 ? heapItemsDistance : - heapItemsDistance
+      const YDistance = heapItemsDistance
+      const parentIndex = Math.floor(Math.abs(i - 1) * 0.5)
+      x = items[parentIndex].x + XDistance * (1 - (layer - 1) / (5 - 1))
+      y = items[parentIndex].y - YDistance
+    }
+    console.log("index:", i, "layer", layer)
+    items.push({
+      id: initialNumberItems.length+1, x: x, y: y, value: 0, heapIndex: i+1
+    })
+    console.log(items)
+  }
+  return items
+}
+
+// const initialHeapItems = createInitialHeapItems()
 
 const initialItems = initialNumberItems.concat(initialHeapItems)
 
-// const frameQueue = new Queue()
-
-// const dataItems = new DataItems(initialItems)
+const useStyles = makeStyles((theme) => ({
+  root: {
+    backgroundColor: theme.palette.background.dark,
+    minHeight: '100%',
+    paddingTop: theme.spacing(3),
+    paddingBottom: theme.spacing(3)
+  },
+  action: {
+    marginBottom: theme.spacing(1),
+    '& + &': {
+      marginLeft: theme.spacing(1)
+    },
+    minWidth: 100
+  }
+}));
 
 const Circles = () => {
+  const classes = useStyles()
   const [frame, setFrame] = useState(initialItems)
   const [heapData, setHeapData] = useState(initialHeapItems)
   // Maybe use dataItems.items as state and rerender the component whenever dataItems.items change?
   // Notice that if an object of the dataItems.items array changes, the items array itself doesn't
   const [dataItems, setDataItems] = useState(new DataItems(initialItems))
-  const [speedMode, setSpeedMode] = useState("Medium")
+  const [speedMode, setSpeedMode] = useState("Fast")
   const [inPlayMode, setInPlayMode] = useState(false)
   const [previousIterationFinished, setPreviousIterationFinished] = useState(true)
   const [numIterations, setNumIterations] = useState(0)
@@ -279,9 +335,6 @@ const Circles = () => {
     setNumIterations(0)
   }
 
-  // *2 since there are (at most) two animations for each item (move right and compare)
-  // +1 since the last item is 1 step from heap head, and +5 to continue 5 steps after all items have been compared with heap head
-  const maxIterations = numbersLength * 2 + 1 + 5
   const speedOptions = ["Slow", "Medium", "Fast", "Ultra Fast"]
   const playModeOptions = ["Playing", "Paused"]
   const playButtonText = inPlayMode ? "Pause" : "Play"
@@ -326,7 +379,7 @@ const Circles = () => {
       const nextFrame = frameQueue.dequeue()
       setFrame(nextFrame)
       // if (frameQueue.isEmpty()) return
-      await delay(frameTransitionDuration)  // wait for the d3 frames transition to be completed
+      await delay(frameTransitionDuration * 1.1)  // wait for the d3 frames transition to be completed
       // debugger
       await animateQueue(frameQueue)
     }
@@ -377,8 +430,14 @@ const Circles = () => {
     lines
       .attr("x1", d => d.x)
       .attr("y1", d => d.y)
-      .attr("x2", d => d.parent.x)
-      .attr("y2", d => d.parent.y)
+      .attr("x2", d => {
+        const parentIndex = dataItems.parentIndex(d.heapIndex-1)
+        return initialHeapItems[parentIndex].x
+      })
+      .attr("y2", d => {
+        const parentIndex = dataItems.parentIndex(d.heapIndex-1)
+        return initialHeapItems[parentIndex].y
+      })
       .attr("stroke", "#CCC")
       .attr("stroke-width", 0.05)
 
@@ -388,24 +447,23 @@ const Circles = () => {
       .transition().duration(frameTransitionDuration)
       .attr("cx", d => d.x)
       .attr("cy", d => d.y)
-      .attr("r",  2)
+      .attr("r",  circleRadius)
       .attr("class", "numberCircle")
       // .style("stroke", "red")
       // .style("stroke-width", .01)
       .style("fill-opacity", .2)
       .style("fill", "purple")
 
-
     svgElement.selectAll("text.numberValue")
       .data(frame)
       .join("text")
       .transition().duration(frameTransitionDuration)
       .attr("dx", d => d.x)
-      .attr("dy", d => d.y+0.2)
+      .attr("dy", d => d.y+circleTextSize/4)
       .attr("text-anchor", "middle")
       .attr("class", "numberValue")
       .text(d => d.value)
-      .attr('font-size',1.5)
+      .attr('font-size',circleTextSize)
       .style('fill', 'orange')
 
     svgElement.selectAll("circle.heapCircle")
@@ -413,7 +471,7 @@ const Circles = () => {
       .join("circle")
       .attr("cx", d => d.x)
       .attr("cy", d => d.y)
-      .attr("r",  1.8)
+      .attr("r",  heapCircleRadius)
       .attr("class", "heapCircle")
       // .style("stroke", "blue")
       // .style("stroke-width", 0.2)
@@ -433,71 +491,123 @@ const Circles = () => {
   // }, 500)
 
   return (
+    <Page
+      className={classes.root}
+      title="Animation"
+    >
+      <Container maxWidth="lg">
+        <Box mt={1}>
+          <Grid container>
+            <Grid
+              item
+              xs={12}
+            >
+
+
     <Card >
+      <CardHeader title="Animation"/>
+      <Divider/>
+      <CardContent>
+
       <svg
-        viewBox="0 0 100 30"
+        viewBox={`0 0 ${svgViewBoxWidth} ${svgViewBoxHeight}`}
         ref={ref}
       />
 
-      <Button
-        color="secondary"
-        disabled={inPlayMode}
-        variant="contained"
-        // className={classes.action}
-        onClick={onNextClick}
-        >
-          Next
-      </Button>
+      <Divider/>
 
-      <Button
-        color="secondary"
-        variant="contained"
-        disabled={numIterations >= maxIterations}
-        // className={classes.action}
-        onClick={() => onPlayClick()}
-        >
-        {playButtonText}
-      </Button>
+      <Box mt={1}>
 
-      <Button
-        color="secondary"
-        variant="contained"
-        // className={classes.action}
-        onClick={onRestartClick}
-        >
-        Restart
-      </Button>
+        <Grid container>
+          <Box mb={1} mr={1}><Grid item >
+            <Button
+              className={classes.action}
+              color="secondary"
+              variant="contained"
+              startIcon={
+                <SvgIcon fontSize="small">
+                  {inPlayMode ? <PauseIcon /> : <PlayIcon />}
+                </SvgIcon>
+              }
+              disabled={numIterations >= maxIterations}
+              onClick={() => onPlayClick()}
+              >
+              {playButtonText}
+            </Button>
 
-      <Button
-        color="secondary"
-        variant="contained"
-        // className={classes.action}
-        onClick={onNextClick}
-        >
-          HeapSize
-      </Button>
+            <Button
+              className={classes.action}
+              color="secondary"
+              variant="contained"
+              startIcon={
+                <SvgIcon fontSize="small">
+                  <FastForwardIcon />
+                </SvgIcon>
+              }
+              disabled={inPlayMode}
+              onClick={onNextClick}
+              >
+                Next
+            </Button>
 
-      <TextField
-        // className={classes.speedField}
-        label="Speed"
-        name="speed"
-        onChange={handleSpeedChange}
-        select
-        SelectProps={{ native: true }}
-        value={speedMode}
-        variant="outlined"
-      >
-        {speedOptions.map((speedOption) => (
-          <option
-            key={speedOption}
-            value={speedOption}
-          >
-            {speedOption}
-          </option>
-        ))}
-      </TextField>
+            <Button
+              className={classes.action}
+              color="secondary"
+              variant="contained"
+              startIcon={
+                <SvgIcon fontSize="small">
+                  <RefreshCwIcon />
+                </SvgIcon>
+              }
+              onClick={onRestartClick}
+              >
+              Restart
+            </Button>
 
+          </Grid></Box>
+          <Box mb={1}><Grid item >
+            <TextField
+              className={classes.action}
+              variant="outlined"
+              size={"small"}
+              label="Speed"
+              name="speed"
+              onChange={handleSpeedChange}
+              select
+              SelectProps={{ native: true }}
+              value={speedMode}
+            >
+              {speedOptions.map((speedOption) => (
+                <option
+                  key={speedOption}
+                  value={speedOption}
+                >
+                  {speedOption}
+                </option>
+              ))}
+            </TextField>
+          </Grid></Box>
+        </Grid>
+
+      {/*<Button*/}
+      {/*  color="secondary"*/}
+      {/*  variant="contained"*/}
+      {/*  // className={classes.action}*/}
+      {/*  onClick={onNextClick}*/}
+      {/*  >*/}
+      {/*    HeapSize*/}
+      {/*</Button>*/}
+
+      </Box>
+
+      </CardContent>
     </Card>
+
+            </Grid>
+          </Grid>
+        </Box>
+      </Container>
+    </Page>
   )
 }
 
