@@ -12,31 +12,9 @@ import {
   SvgIcon,
   TextField
 } from "@material-ui/core";
-import clsx from "clsx";
-import {Link as RouterLink} from "react-router-dom";
-import {Play as PlayIcon, Pause as PauseIcon, FastForward as FastForwardIcon, RefreshCw as RefreshCwIcon, PlusCircle as PlusCircleIcon} from "react-feather";
+import {Play as PlayIcon, Pause as PauseIcon, FastForward as FastForwardIcon, RefreshCw as RefreshCwIcon} from "react-feather";
 import Page from "../../components/Page";
 import { useTheme } from "@material-ui/core/styles";
-
-function useInterval(callback, delay) {
-  const savedCallback = useRef();
-
-  // Remember the latest callback.
-  useEffect(() => {
-    savedCallback.current = callback;
-  }, [callback]);
-
-  // Set up the interval.
-  useEffect(() => {
-    function tick() {
-      savedCallback.current();
-    }
-    if (delay !== null) {
-      let id = setInterval(tick, delay);
-      return () => clearInterval(id);
-    }
-  }, [delay]);
-}
 
 class Queue {
   constructor(items = []) {
@@ -53,48 +31,15 @@ class Queue {
   }
 }
 
-class DataItem {
-  constructor(id, x, y, parent, value=0, heapIndex=null) {
-    this.id = id
-    this.x = x
-    this.y = y
-    this.value = value
-    this.heapIndex = heapIndex
-  }
-}
-
-class Heap {
-  constructor(items) {
-    this.items = items
-  }
-
-  push = (item) => {
-  }
-
-  pop = (item) => {
-  }
-
-  swap = (item1, item2) => {
-    const index1 = this.items.indexOf(item1)
-    const index2 = this.items.indexOf(item2)
-    // console.log("swapping heap values:", item1.value, `${index1}`, item2.value, `${index2}`, " ...")
-    this.items[index1] = item2
-    this.items[index2] = item1
-    console.log("heap after swap:", this.items)
-  }
-
-}
-
 class DataItems {
   constructor(items = [], frameQueue = new Queue(), heap = null) {
     this.items = items
     this.frameQueue = frameQueue
-    // this.heap = heap? heap : new Heap(this.heapItems())
   }
 
   enqueueFrame = (frameData = this.items) => {
     // A frame is the array of items (items have new coordinates in each frame).
-    console.log("  enqueueing frame:", frameData)
+    // console.log("  enqueueing frame:", frameData)
     this.frameQueue.enqueue(frameData)
   }
 
@@ -105,13 +50,8 @@ class DataItems {
     // Think of it like this: An item is moving when its x and y coordinates change, not when its index change
     const index1 = this.items.indexOf(item1)
     const index2 = this.items.indexOf(item2)
-    if (index1 === -1 || index2 === -2) {
-      console.log("  items to be swapped not found in items array:", this.items)
-      console.log("    item1", item1)
-      console.log("    item2", item2)
-      return
-    }
-    console.log("  swapping values:", item1.value, `${index1}`, item2.value, `${index2}`, " ...")
+    if (index1 === -1 || index2 === -2) return
+    // console.log("  swapping values:", item1.value, `${index1}`, item2.value, `${index2}`, " ...")
     this.items = this.items.map((item, index) => {
       if (index === index1) return {...item2, value: item.value, id: item.id}
       else if (index === index2) return {...item1, value: item.value, id: item.id}
@@ -133,6 +73,10 @@ class DataItems {
   heapItems = () => {
     // get the items that belong to the heap
     return this.items.filter(item => item.heapIndex)
+  }
+
+  nonHeapItems = () => {
+    return this.items.filter(item => !item.heapIndex)
   }
 
   heapItemsSortedByIndex = (items = this.heapItems()) => {
@@ -168,12 +112,11 @@ class DataItems {
       // console.log("kid2Index index", kid2Index)
       return [sortedHeapItems[kid1Index], sortedHeapItems[kid2Index]]
     }
-    console.log("  item:", heapItem, "has no kids")
+    // console.log("  item:", heapItem, "has no kids")
   }
 
   itemKidsSorted = (heapItem, sortedHeapItems=this.heapItemsSortedByIndex()) => {
     const kids = this.itemKids(heapItem, sortedHeapItems)
-    console.log("  kids:", kids)
     if (!kids) return
     return kids.sort((a, b) => {
       return a.value - b.value
@@ -201,24 +144,31 @@ class DataItems {
 
   parentIndex = heapIndex => Math.floor(Math.abs(heapIndex - 1) * 0.5)
 
-  firstItemsX = () => this.items[0].x
+  firstNonHeapItem = () => {
+    const nonHeapItems = this.nonHeapItems()
+    // const sorted = nonHeapItems.sort((a, b) => a.x - b.x)
+    return nonHeapItems[0]
+  }
+
+  isFullyAnimated = () => {
+    // The first nonHeapItem has the smallest X coordinate so it is the furthest one on the left. If it is greater
+    // than the viewBox width, then it has been moved completely on the left and all items have been processed.
+    return this.firstNonHeapItem().x > svgViewBoxWidth
+  }
 
   reheap = (heapIndex= 0) => {
     // todo use the item.heapIndex property to avoid sorting
-    console.log("reheaping from index:", heapIndex)
+    // console.log("reheaping from index:", heapIndex)
     const sortedHeapItems = this.heapItemsSortedByIndex()
     const item = sortedHeapItems[heapIndex]
     // const item = this.items.filter((item) => item.heapIndex = heapIndex+1)[0]
-    console.log("  reheaping item:", item)
+    // console.log("  reheaping item:", item)
     const smallerKid = this.getKidForSwap(item, sortedHeapItems)
-    if (!smallerKid) {
-      console.log("  smallerKid:", smallerKid)
-      return
-    }  // item has no kids
+    if (!smallerKid) return  // item has no kids
     this.swap(item, smallerKid)
     // reheap again starting from the swapped kid
-    this.reheap(smallerKid.heapIndex-1)  // have in mind that currently heapIndex property starts from 1 not 0
-    console.log("reheap of item", item, "with index", heapIndex, "completed")
+    this.reheap(smallerKid.heapIndex-1)  // have in mind that currently the heapIndex property starts from 1 not 0
+    // console.log("reheap of item", item, "with index", heapIndex, "completed")
   }
 
 }
@@ -231,7 +181,7 @@ const svgViewBoxWidth = 100
 const svgViewBoxHeight = 35
 const heapHeadX = svgViewBoxWidth * 0.5
 const heapHeadY = svgViewBoxHeight * 0.5
-const circleRadius = 3
+const circleRadius = svgViewBoxWidth * 0.03
 const heapCircleRadius = circleRadius * 0.9
 const circleTextSize = circleRadius * 0.8
 const itemsXDistance = circleRadius * 2.5
@@ -261,11 +211,12 @@ const initialHeapItems = [
   {id: initialNumberItems.length+7, x: heapHeadX+heapItemsDistance*1.3+circleRadius*1.1, y: heapHeadY-heapItemsDistance*2.2, value: 0, heapIndex: 7},
 ]
 
-const createInitialHeapItems = () => {
+const createInitialHeapItems = (heapSize) => {
+  // generate initial heap items for a given heap size
   let items = []
   let x, y
   for (let i=0; i<heapSize; i++){
-    let layer
+    let layer  // the layer of the heap (make it a function)
     for (let exp = 0; ; exp++) {
       // console.log("exp:", exp, "i+1/2**exp", i+1/2**exp, "i+1/Math.abs(2**(exp+1))", i+1/Math.abs(2**(exp+1)))
       // if (i/2**exp >= 1 && i/2**(exp+1) < 2 || i === 0) {
@@ -281,6 +232,7 @@ const createInitialHeapItems = () => {
       const XDistance = i % 2 === 0 ? heapItemsDistance : - heapItemsDistance
       const YDistance = heapItemsDistance
       const parentIndex = Math.floor(Math.abs(i - 1) * 0.5)
+      // todo kid nodes X coordinate isn't calculated properly. Currently they overlap
       x = items[parentIndex].x + XDistance * (1 - (layer - 1) / (5 - 1))
       y = items[parentIndex].y - YDistance
     }
@@ -292,8 +244,6 @@ const createInitialHeapItems = () => {
   }
   return items
 }
-
-// const initialHeapItems = createInitialHeapItems()
 
 const initialItems = initialNumberItems.concat(initialHeapItems)
 
@@ -322,103 +272,15 @@ const Circles = () => {
   const [dataItems, setDataItems] = useState(new DataItems(initialItems))
   const [speedMode, setSpeedMode] = useState("Fast")
   const [inPlayMode, setInPlayMode] = useState(false)
-  const [previousIterationFinished, setPreviousIterationFinished] = useState(true)
-  const [numIterations, setNumIterations] = useState(0)
+  const [currentIterationFinished, setCurrentIterationFinished] = useState(true)
+  // const [numIterations, setNumIterations] = useState(0)
   const theme = useTheme()
   const ref = useRef()
 
-  const initialize = () => {
-    setFrame(initialItems)
-    setHeapData(initialHeapItems)
-    setDataItems(new DataItems(initialItems))
-    setInPlayMode(false)
-    setPreviousIterationFinished(true)
-    setNumIterations(0)
-  }
-
-  const speedOptions = ["Slow", "Medium", "Fast", "Ultra Fast"]
-  const playModeOptions = ["Playing", "Paused"]
-  const playButtonText = inPlayMode ? "Pause" : "Play"
-
-  let frameTransitionDuration = 750
-
-  if (speedMode === "Slow"){
-    frameTransitionDuration = 1250
-  } else if (speedMode === "Medium"){
-    frameTransitionDuration = 750
-  } else if (speedMode === "Fast"){
-    frameTransitionDuration = 350
-  } else {
-    frameTransitionDuration = 100
-  }
-
-  const generateIterationFrames = () => {
-    // const dataItems = new DataItems(prevItems)
-    const heapHead = dataItems.heapHead()
-    for (const item of dataItems.items) {
-      if (!item.heapIndex && Math.abs(item.x - heapHead.x) < 1) {
-        if (item.value > heapHead.value){
-          console.log("pushing item to heap")
-          dataItems.swap(item, heapHead)
-          dataItems.reheap()
-          return dataItems.frameQueue
-        }
-      }
-    }
-    dataItems.moveRight()
-    return dataItems.frameQueue
-  }
-
-  const delay = ms => {
-    console.log("  delaying for:", ms)
-    return new Promise(resolve => setTimeout(resolve, ms));
-  }
-
-  const animateQueue = async (frameQueue) => {
-    // animate all frames of the queue, waiting between every frame so that d3 completes the animation
-    if (!frameQueue.isEmpty()){
-      const nextFrame = frameQueue.dequeue()
-      setFrame(nextFrame)
-      // if (frameQueue.isEmpty()) return
-      await delay(frameTransitionDuration * 1.1)  // wait for the d3 frames transition to be completed
-      // debugger
-      await animateQueue(frameQueue)
-    }
-    // if (!play) throw "error"
-  }
-
-  const iterate = async () => {
-    console.log(">>> Iterating <<<")
-    setPreviousIterationFinished(false)
-    setNumIterations(prevCount => prevCount + 1)
-    generateIterationFrames()
-    console.log("> Animating queue:", dataItems.frameQueue)
-    const promise = await animateQueue(dataItems.frameQueue)
-    console.log("> Queue animated")
-    setPreviousIterationFinished(true)
-    // debugger
-    return promise
-  }
-
-  const onNextClick = async () => {
-    await iterate()
-  }
-
-  const onPlayClick = () => {
-    setInPlayMode(prevPlaying => !prevPlaying)
-  }
-
-  const handleSpeedChange = (event) => {
-    // event.persist();
-    setSpeedMode(event.target.value)
-  }
-
-  const onRestartClick = () => {
-    initialize()
-  }
+  const isFullyAnimated = dataItems.isFullyAnimated()
 
   useEffect(() => {
-    // todo currently it's not d3 that rerenders when the data change. The effect is running in every data change and
+    // todo Currently it's not d3 that rerenders when the data change. The effect is running in every data change and
     // runs d3 from the beginning with the new data!
 
     const circlesTheme = theme.heapCirclesTheme
@@ -442,7 +304,7 @@ const Circles = () => {
         return initialHeapItems[parentIndex].y
       })
       .attr("stroke", circlesTheme.lineStroke)
-      .attr("stroke-width", 0.05)
+      .attr("stroke-width", 0.1)
 
     svgElement.selectAll("circle.numberCircle")
       .data(frame)
@@ -484,17 +346,102 @@ const Circles = () => {
     // Notice that one iteration can contain more than one animation frames. This means that the effect will run
     // for each frame within the same iteration. In these cases we don't want to reiterate. We only want to reiterate
     // when the previous iteration has finished.
-    if (numIterations <= maxIterations && inPlayMode && previousIterationFinished) iterate()
+    if (!isFullyAnimated && inPlayMode && currentIterationFinished) iterate(dataItems)
 
   }, [
-    frame, heapData, numIterations, inPlayMode, previousIterationFinished,
+    frame, heapData, inPlayMode, currentIterationFinished,
     theme.name,  // theme.name so that every time the theme changes the effect runs and new circlesTheme is used
   ])
 
-  // useInterval(() => {
-  //   // const newDataset = nextDataset(dataset)
-  //   setDataset(prevDataset => nextDataset(prevDataset))
-  // }, 500)
+  const initialize = () => {
+    setFrame(initialItems)
+    setHeapData(initialHeapItems)
+    setDataItems(new DataItems(initialItems))
+    setInPlayMode(false)
+    setCurrentIterationFinished(true)
+    // setNumIterations(0)
+  }
+
+  const speedOptions = ["Slow", "Medium", "Fast", "Ultra Fast"]
+  // const playModeOptions = ["Playing", "Paused"]
+  const playButtonText = inPlayMode ? "Pause" : "Play"
+
+  let frameTransitionDuration = 750
+
+  if (speedMode === "Slow"){
+    frameTransitionDuration = 1250
+  } else if (speedMode === "Medium"){
+    frameTransitionDuration = 750
+  } else if (speedMode === "Fast"){
+    frameTransitionDuration = 350
+  } else {
+    frameTransitionDuration = 100
+  }
+
+  const generateIterationFrames = (dataItems) => {
+    // const dataItems = new DataItems(prevItems)
+    const heapHead = dataItems.heapHead()
+    for (const item of dataItems.items) {
+      if (!item.heapIndex && Math.abs(item.x - heapHead.x) < 1) {
+        if (item.value > heapHead.value){
+          // console.log("pushing item to heap")
+          dataItems.swap(item, heapHead)
+          dataItems.reheap()
+          return dataItems.frameQueue
+        }
+      }
+    }
+    dataItems.moveRight()
+    return dataItems.frameQueue
+  }
+
+  const delay = ms => {
+    // console.log("  delaying for:", ms)
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  const animateQueue = async (frameQueue) => {
+    // animate all frames of the queue, waiting between every frame so that d3 completes the animation
+    if (!frameQueue.isEmpty()){
+      const nextFrame = frameQueue.dequeue()
+      setFrame(nextFrame)
+      // if (frameQueue.isEmpty()) return
+      await delay(frameTransitionDuration * 1.1)  // wait for the d3 frames transition to be completed
+      // debugger
+      await animateQueue(frameQueue)
+    }
+    // if (!play) throw "error"
+  }
+
+  const iterate = async (dataItems) => {
+    setCurrentIterationFinished(false)
+    console.log("Iterating...")
+    // setNumIterations(prevCount => prevCount + 1)
+    const frameQueue = generateIterationFrames(dataItems)
+    console.log(" Animating queue:", frameQueue)
+    const promise = await animateQueue(frameQueue)
+    console.log(" Queue animated")
+    setCurrentIterationFinished(true)
+    // debugger
+    return promise
+  }
+
+  const onNextClick = async () => {
+    await iterate(dataItems)
+  }
+
+  const onPlayClick = () => {
+    setInPlayMode(prevPlaying => !prevPlaying)
+  }
+
+  const handleSpeedChange = (event) => {
+    event.persist();
+    setSpeedMode(event.target.value)
+  }
+
+  const onRestartClick = () => {
+    initialize()
+  }
 
   return (
     <Page
@@ -535,7 +482,7 @@ const Circles = () => {
                   {inPlayMode ? <PauseIcon /> : <PlayIcon />}
                 </SvgIcon>
               }
-              disabled={numIterations >= maxIterations}
+              disabled={isFullyAnimated}
               onClick={() => onPlayClick()}
               >
               {playButtonText}
@@ -550,7 +497,7 @@ const Circles = () => {
                   <FastForwardIcon />
                 </SvgIcon>
               }
-              disabled={inPlayMode}
+              disabled={inPlayMode || isFullyAnimated}
               onClick={onNextClick}
               >
                 Next
