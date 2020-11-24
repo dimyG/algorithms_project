@@ -31,6 +31,8 @@ const baseOptions = {
   }
 };
 
+const lightSecondary = '#5850EC'
+
 const themesOptions = [
   {
     name: THEMES.LIGHT,
@@ -58,12 +60,20 @@ const themesOptions = [
         main: colors.indigo[600]
       },
       secondary: {
-        main: '#5850EC'
+        main: lightSecondary
       },
       text: {
         primary: colors.blueGrey[900],
         secondary: colors.blueGrey[600]
       }
+    },
+    heapCirclesTheme: {
+      circleFill: lightSecondary,
+      circleFillOpacity: 0.9,
+      circleTextFill: "white",
+      heapCircleFill: "yellow",
+      heapCircleFillOpacity: 0.4,
+      lineStroke: "grey",
     },
     shadows: softShadows
   },
@@ -95,6 +105,14 @@ const themesOptions = [
         secondary: '#adb0bb'
       }
     },
+    heapCirclesTheme: {
+      circleFill: "purple",
+      circleFillOpacity: 0.2,
+      circleTextFill: "orange",
+      heapCircleFill: "yellow",
+      heapCircleFillOpacity: 0.1,
+      lineStroke: "#ccc",
+    },
     shadows: strongShadows
   },
   {
@@ -124,6 +142,14 @@ const themesOptions = [
         primary: '#f6f5f8',
         secondary: '#9699a4'
       }
+    },
+    heapCirclesTheme: {
+      circleFill: "purple",
+      circleFillOpacity: 0.2,
+      circleTextFill: "orange",
+      heapCircleFill: "yellow",
+      heapCircleFillOpacity: 0.1,
+      lineStroke: "#ccc",
     },
     shadows: strongShadows
   }

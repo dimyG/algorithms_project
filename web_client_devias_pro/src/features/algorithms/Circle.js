@@ -16,6 +16,7 @@ import clsx from "clsx";
 import {Link as RouterLink} from "react-router-dom";
 import {Play as PlayIcon, Pause as PauseIcon, FastForward as FastForwardIcon, RefreshCw as RefreshCwIcon, PlusCircle as PlusCircleIcon} from "react-feather";
 import Page from "../../components/Page";
+import { useTheme } from "@material-ui/core/styles";
 
 function useInterval(callback, delay) {
   const savedCallback = useRef();
@@ -254,10 +255,10 @@ const initialHeapItems = [
   {id: initialNumberItems.length+1, x: heapHeadX, y: heapHeadY, value: 0, heapIndex: 1},
   {id: initialNumberItems.length+2, x: heapHeadX-heapItemsDistance*1.3, y: heapHeadY-heapItemsDistance, value: 0, heapIndex: 2},
   {id: initialNumberItems.length+3, x: heapHeadX+heapItemsDistance*1.3, y: heapHeadY-heapItemsDistance, value: 0, heapIndex: 3},
-  {id: initialNumberItems.length+4, x: heapHeadX-heapItemsDistance*1.3-circleRadius, y: heapHeadY-heapItemsDistance*2.2, value: 0, heapIndex: 4},
-  {id: initialNumberItems.length+5, x: heapHeadX-heapItemsDistance*1.3+circleRadius, y: heapHeadY-heapItemsDistance*2.2, value: 0, heapIndex: 5},
-  {id: initialNumberItems.length+6, x: heapHeadX+heapItemsDistance*1.3-circleRadius, y: heapHeadY-heapItemsDistance*2.2, value: 0, heapIndex: 6},
-  {id: initialNumberItems.length+7, x: heapHeadX+heapItemsDistance*1.3+circleRadius, y: heapHeadY-heapItemsDistance*2.2, value: 0, heapIndex: 7},
+  {id: initialNumberItems.length+4, x: heapHeadX-heapItemsDistance*1.3-circleRadius*1.1, y: heapHeadY-heapItemsDistance*2.2, value: 0, heapIndex: 4},
+  {id: initialNumberItems.length+5, x: heapHeadX-heapItemsDistance*1.3+circleRadius*1.1, y: heapHeadY-heapItemsDistance*2.2, value: 0, heapIndex: 5},
+  {id: initialNumberItems.length+6, x: heapHeadX+heapItemsDistance*1.3-circleRadius*1.1, y: heapHeadY-heapItemsDistance*2.2, value: 0, heapIndex: 6},
+  {id: initialNumberItems.length+7, x: heapHeadX+heapItemsDistance*1.3+circleRadius*1.1, y: heapHeadY-heapItemsDistance*2.2, value: 0, heapIndex: 7},
 ]
 
 const createInitialHeapItems = () => {
@@ -323,7 +324,7 @@ const Circles = () => {
   const [inPlayMode, setInPlayMode] = useState(false)
   const [previousIterationFinished, setPreviousIterationFinished] = useState(true)
   const [numIterations, setNumIterations] = useState(0)
-
+  const theme = useTheme()
   const ref = useRef()
 
   const initialize = () => {
@@ -420,6 +421,8 @@ const Circles = () => {
     // todo currently it's not d3 that rerenders when the data change. The effect is running in every data change and
     // runs d3 from the beginning with the new data!
 
+    const circlesTheme = theme.heapCirclesTheme
+
     const svgElement = d3.select(ref.current)
 
     const lines = svgElement.selectAll("line")
@@ -438,7 +441,7 @@ const Circles = () => {
         const parentIndex = dataItems.parentIndex(d.heapIndex-1)
         return initialHeapItems[parentIndex].y
       })
-      .attr("stroke", "#CCC")
+      .attr("stroke", circlesTheme.lineStroke)
       .attr("stroke-width", 0.05)
 
     svgElement.selectAll("circle.numberCircle")
@@ -451,8 +454,8 @@ const Circles = () => {
       .attr("class", "numberCircle")
       // .style("stroke", "red")
       // .style("stroke-width", .01)
-      .style("fill-opacity", .2)
-      .style("fill", "purple")
+      .style("fill-opacity", circlesTheme.circleFillOpacity)
+      .style("fill", circlesTheme.circleFill)
 
     svgElement.selectAll("text.numberValue")
       .data(frame)
@@ -463,8 +466,8 @@ const Circles = () => {
       .attr("text-anchor", "middle")
       .attr("class", "numberValue")
       .text(d => d.value)
-      .attr('font-size',circleTextSize)
-      .style('fill', 'orange')
+      .attr('font-size', circleTextSize)
+      .style('fill', circlesTheme.circleTextFill)
 
     svgElement.selectAll("circle.heapCircle")
       .data(heapData)
@@ -475,15 +478,18 @@ const Circles = () => {
       .attr("class", "heapCircle")
       // .style("stroke", "blue")
       // .style("stroke-width", 0.2)
-      .style("fill-opacity", .1)
-      .style("fill", "yellow")
+      .style("fill-opacity", circlesTheme.heapCircleFillOpacity)
+      .style("fill", circlesTheme.heapCircleFill)
 
     // Notice that one iteration can contain more than one animation frames. This means that the effect will run
     // for each frame within the same iteration. In these cases we don't want to reiterate. We only want to reiterate
     // when the previous iteration has finished.
     if (numIterations <= maxIterations && inPlayMode && previousIterationFinished) iterate()
 
-  }, [frame, heapData, numIterations, inPlayMode, previousIterationFinished])
+  }, [
+    frame, heapData, numIterations, inPlayMode, previousIterationFinished,
+    theme.name,  // theme.name so that every time the theme changes the effect runs and new circlesTheme is used
+  ])
 
   // useInterval(() => {
   //   // const newDataset = nextDataset(dataset)
