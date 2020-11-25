@@ -385,11 +385,14 @@ const NavBar = ({ onMobileClose, openMobile }) => {
   }, [location.pathname]);
 
   let items = []
-  for (const algorithm of algorithms){
+
+  const algorithmsWithAnimation = algorithms.filter(algorithm => algorithm.has_animation)
+
+  for (const algorithm of algorithmsWithAnimation){
     items.push(
       {
         title: algorithm.name,
-        href: `/algorithms/${algorithm.id}`
+        href: `/animations/${algorithm.id}`
       }
     )
   }
@@ -398,15 +401,6 @@ const NavBar = ({ onMobileClose, openMobile }) => {
     {
       subheader: '',
       items: items,
-    },
-    {
-      subheader: '',
-      items: [
-        {
-          title: 'Animation',
-          href: '/animation'
-        }
-      ]
     }
   ]
 
@@ -415,7 +409,7 @@ const NavBar = ({ onMobileClose, openMobile }) => {
       subheader: '',
       items: [{
         title: 'Algorithms',
-        icon: ListIcon,
+        // icon: ListIcon,
         href: '/algorithms/list'
       }]
     })

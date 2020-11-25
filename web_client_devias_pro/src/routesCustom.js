@@ -9,16 +9,14 @@ import {
   Route
 } from 'react-router-dom';
 import DashboardLayout from 'src/layouts/DashboardLayout';
-import DocsLayout from 'src/layouts/DocsLayout';
-import MainLayout from 'src/layouts/MainLayout';
-import HomeView from 'src/views/home/HomeView';
 import LoadingScreen from 'src/components/LoadingScreen';
 import AuthGuard from 'src/components/AuthGuard';
 import GuestGuard from 'src/components/GuestGuard';
-import HomePageCustom from "./homePageCustom";
 import AlgorithmCreateUpdate from "./features/algorithms/AlgorithmCreateUpdate";
 import AlgorithmsListView from "./features/algorithms/AlgorithmsListView";
-import Circle from "./features/algorithms/Circle";
+import AnimationsRoute from "./features/animations/AnimationsRoute";
+import {minHeapId} from "./constants";
+
 
 export const renderRoutes = (routes = []) => (
   <Suspense fallback={<LoadingScreen />}>
@@ -85,19 +83,28 @@ const routes = [
       {
         exact: true,
         path: '/algorithms/list',
+        // guard: AuthGuard,
         component: AlgorithmsListView
       },
       {
         exact: true,
         path: '/algorithms/create',
+        // guard: AuthGuard,
         component: AlgorithmCreateUpdate
       },
       {
         exact: true,
         path: '/algorithms/:algorithmId',
+        // guard: AuthGuard,
         component: AlgorithmCreateUpdate
-      }
+      },
     ]
+  },
+  {
+    exact: true,
+    path: '/animations/:algorithmId/',
+    layout: DashboardLayout,
+    component: AnimationsRoute
   },
   {
     path: '*',
@@ -109,12 +116,7 @@ const routes = [
       {
         exact: true,
         path: '/',
-        component: AlgorithmsListView
-      },
-      {
-        exact: true,
-        path: '/animation',
-        component: Circle
+        component: () => <Redirect to={`/animations/${minHeapId}`} />  // todo use algorithm's slug in the url
       },
       {
         component: () => <Redirect to="/404" />

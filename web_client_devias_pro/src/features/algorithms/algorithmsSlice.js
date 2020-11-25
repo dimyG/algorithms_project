@@ -32,7 +32,8 @@ export const getAlgorithmsThunk = createAsyncThunk('algorithms/get', async (dumm
 export const createAlgorithmThunk = createAsyncThunk('algorithms/create', async ({name, csrfToken}, {rejectWithValue}) => {
   // const long_result = await long()
   // console.log('long_result: ', long_result)
-  const body = {'name': name}
+  const slug = name.replace(/ /g, '')
+  const body = {'name': name, 'slug': slug}
   // have in mind that when using session authentication backend csrf token is only necessary for authenticated requests
   const config = {headers: {'X-CSRFToken': csrfToken}}
   try{
@@ -91,7 +92,8 @@ export const createAlgorithmThunk = createAsyncThunk('algorithms/create', async 
 })
 
 export const updateAlgorithmThunk = createAsyncThunk("algorithms/update", async ({id, name, csrfToken}, {rejectWithValue}) => {
-  const body = {'id': id, 'name': name}
+  const slug = name.replace(/ /g, '')
+  const body = {'id': id, 'name': name, 'slug': slug}
   const config = {headers: {'X-CSRFToken': csrfToken}}
   try {
     // the trailing slash is needed by django in PUT requests
@@ -318,6 +320,12 @@ export const getStatusSelector = state => state.algorithms.get.status
 // export const deleteErrorSelector = state => state.algorithms.delete.error
 // export const deleteManyStatusSelector = state => state.algorithms.delete_many.status
 // export const deleteManyErrorSelector = state => state.algorithms.delete_many.error
+
+export const algorithmByIdSelector = (state, algorithmId) =>
+  state.algorithms.list.filter(algorithm => algorithm.id === parseInt(algorithmId))[0]
+
+export const algorithmBySlugSelector = (state, algorithmSlug) =>
+  state.algorithms.list.filter(algorithm => algorithm.slug === algorithmSlug)[0]
 
 export const {addMessage, markMessageSeen} = algorithmsSlice.actions
 

@@ -32,6 +32,7 @@ class Queue {
 }
 
 class DataItems {
+  // todo think the case of millions of items, remove sorting and iterating through all items
   constructor(items = [], frameQueue = new Queue(), heap = null) {
     this.items = items
     this.frameQueue = frameQueue
@@ -263,7 +264,7 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-const Circles = () => {
+const MinHeapAnimation = () => {
   const classes = useStyles()
   const [frame, setFrame] = useState(initialItems)
   const [heapData, setHeapData] = useState(initialHeapItems)
@@ -564,4 +565,4 @@ const Circles = () => {
   )
 }
 
-export default Circles
+export default MinHeapAnimation

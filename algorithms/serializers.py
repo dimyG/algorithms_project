@@ -6,4 +6,4 @@ class AlgorithmSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Algorithm
-        fields = ('id', 'name', )
+        fields = ('id', 'name', 'slug', 'has_animation')

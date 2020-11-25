@@ -23,6 +23,7 @@ import { createTheme } from 'src/theme';
 import routes, { renderRoutes } from 'src/routesCustom';
 import {Csrf} from "./features/csrf/csrf";
 import Messages from "./components/Messages";
+import GetAlgorithms from "./features/algorithms/GetAlgorithms";
 
 const jss = create({ plugins: [...jssPreset().plugins, rtl()] });
 const history = createBrowserHistory();
@@ -63,6 +64,9 @@ const App = () => {
           >
             <Csrf/>
             <Messages/>
+             {/* GetAlgorithms needs to be here too so that the algorithms list is full. It needs to be full,
+             since the home page redirects to the mih heap animation which reads data from the store */}
+            <GetAlgorithms />
             <Router history={history}>
               <AuthProvider>
                 <GlobalStyles />
