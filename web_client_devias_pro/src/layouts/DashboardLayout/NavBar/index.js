@@ -407,11 +407,13 @@ const NavBar = ({ onMobileClose, openMobile }) => {
   // if (user) {
   sections.push({
     subheader: '',
-    items: [{
-      title: 'Algorithms',
-      // icon: ListIcon,
-      href: '/algorithms/list'
-    }]
+    items: [
+      {
+        title: 'Algorithms',
+        // icon: ListIcon,
+        href: '/algorithms/list'
+      },
+    ]
   })
   // }
 

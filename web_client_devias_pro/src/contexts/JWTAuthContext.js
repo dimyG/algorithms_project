@@ -171,6 +171,7 @@ export const AuthProvider = ({ children }) => {
         if (accessToken && isValidToken(accessToken)) {
           setSession(accessToken);
 
+          // todo now get the user so that on reload page you are still logged in if you have a valid accessToken
           const response = await axios.get('/api/account/me');
           const { user } = response.data;
 

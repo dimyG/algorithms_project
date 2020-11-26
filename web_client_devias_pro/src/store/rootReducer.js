@@ -8,6 +8,7 @@ import { reducer as notificationReducer } from 'src/slices/notification';
 import counterReducer from '../features/counter/counterSlice';
 import algorithmsReducer from '../features/algorithms/algorithmsSlice'
 import csrfReducer from '../features/csrf/csrfSlice'
+import loginTargetPathReducer from '../features/loginTargetPathSlice'
 
 const rootReducer = combineReducers({
   calendar: calendarReducer,
@@ -19,6 +20,7 @@ const rootReducer = combineReducers({
   counter: counterReducer,
   algorithms: algorithmsReducer,
   csrf: csrfReducer,
+  loginTargetPath: loginTargetPathReducer,
 });
 
 export default rootReducer;
