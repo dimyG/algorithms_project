@@ -13,6 +13,7 @@ import {
 import { Alert } from '@material-ui/lab';
 import useAuth from 'src/hooks/useAuth';
 import useIsMountedRef from 'src/hooks/useIsMountedRef';
+import {demoUsername, demoPassword} from "../../../constants";
 
 const useStyles = makeStyles(() => ({
   root: {}
@@ -26,8 +27,8 @@ const JWTLogin = ({ className, ...rest }) => {
   return (
     <Formik
       initialValues={{
-        email: 'charis@test.com',
-        password: 'testthetest',
+        email: demoUsername,
+        password: demoPassword,
         submit: null
       }}
       validationSchema={Yup.object().shape({
@@ -124,11 +125,11 @@ const JWTLogin = ({ className, ...rest }) => {
               <div>
                 Use
                 {' '}
-                <b>demo@devias.io</b>
+                <b>{demoUsername}</b>
                 {' '}
                 and password
                 {' '}
-                <b>Password123</b>
+                <b>{demoPassword}</b>
               </div>
             </Alert>
           </Box>

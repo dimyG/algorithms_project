@@ -76,16 +76,22 @@ const routes = [
     component: lazy(() => import('src/views/auth/RegisterView'))
   },
   {
+    exact: true,
+    path: '/algorithms/list',
+    layout: DashboardLayout,
+    component: AlgorithmsListView
+  },
+  {
+    exact: true,
+    path: '/animations/:algorithmId/',
+    layout: DashboardLayout,
+    component: AnimationsRoute
+  },
+  {
     path: '/algorithms',
     guard: AuthGuard,
     layout: DashboardLayout,
     routes: [
-      {
-        exact: true,
-        path: '/algorithms/list',
-        // guard: AuthGuard,
-        component: AlgorithmsListView
-      },
       {
         exact: true,
         path: '/algorithms/create',
@@ -101,12 +107,6 @@ const routes = [
     ]
   },
   {
-    exact: true,
-    path: '/animations/:algorithmId/',
-    layout: DashboardLayout,
-    component: AnimationsRoute
-  },
-  {
     path: '*',
     // guard: AuthGuard,
     // Notice that I have changed TopBar and Navbar (rendered by the DashboardLayout) so that they can be rendered
@@ -116,7 +116,10 @@ const routes = [
       {
         exact: true,
         path: '/',
-        component: () => <Redirect to={`/animations/${minHeapId}`} />  // todo use algorithm's slug in the url
+        component: () => {
+          console.log(`redirecting to: /animations/${minHeapId}`)
+          return <Redirect to={`/animations/${minHeapId}`} />
+        }  // todo use algorithm's slug in the url but have in mind that the slug might change from the user
       },
       {
         component: () => <Redirect to="/404" />

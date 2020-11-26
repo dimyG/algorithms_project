@@ -28,7 +28,7 @@ const JWTRegister = ({ className, ...rest }) => {
   return (
     <Formik
       initialValues={{
-        email: 'test@test.com',
+        email: '',
         // name: '',
         password1: '',
         password2: '',

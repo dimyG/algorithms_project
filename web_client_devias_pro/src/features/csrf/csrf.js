@@ -1,6 +1,6 @@
 import React from "react";
 import {useDispatch} from "react-redux";
-import {readFromCookie} from "./csrfSlice";
+import {readCsrfFromCookie} from "./csrfSlice";
 import {useEffect} from 'react'
 
 export const Csrf = () => {
@@ -12,7 +12,7 @@ export const Csrf = () => {
     // modify the redux state. If it did then the CSRF component would be re-rendered and the new value would be used
     // maybe perform this after every action, using a middleware
     useEffect(() => {
-        dispatch(readFromCookie())
+        dispatch(readCsrfFromCookie())
     })
 
     return null

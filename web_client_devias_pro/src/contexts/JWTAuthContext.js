@@ -9,7 +9,7 @@ import SplashScreen from 'src/components/SplashScreen';
 import axios from "axios"
 import {useDispatch} from "react-redux";
 import {addMessage} from "../features/algorithms/algorithmsSlice";
-import {readFromCookie} from "../features/csrf/csrfSlice";
+import {readCsrfFromCookie} from "../features/csrf/csrfSlice";
 
 // const initialUser = {
 //   name: null,
@@ -112,7 +112,7 @@ export const AuthProvider = ({ children }) => {
       user.avatar = null
       const accessToken = access_token
 
-      reduxDispatch(readFromCookie())
+      reduxDispatch(readCsrfFromCookie())
       setSession(accessToken);
       dispatch({
         type: 'LOGIN',

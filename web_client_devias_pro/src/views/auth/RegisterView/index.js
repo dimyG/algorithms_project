@@ -194,7 +194,7 @@ const RegisterView = () => {
               variant="body2"
               color="textSecondary"
             >
-              Having an account
+              Already registered? Sign In
             </Link>
           </CardContent>
         </Card>

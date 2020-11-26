@@ -9,3 +9,5 @@ export const THEMES = {
 };
 
 export const minHeapId = 51
+export const demoUsername = "charis@test.com"
+export const demoPassword = "testthetest"

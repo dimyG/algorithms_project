@@ -1,18 +1,24 @@
-import React from 'react'
-import {useSelector} from "react-redux";
-import {algorithmByIdSelector} from "../algorithms/algorithmsSlice";
+import React, {useEffect} from 'react'
+import {useDispatch, useSelector} from "react-redux";
+import {algorithmByIdSelector, getAlgorithmThunk} from "../algorithms/algorithmsSlice";
 import MinHeapAnimation from "./MinHeapAnimation";
 import {Redirect} from "react-router";
 import {minHeapId} from "../../constants";
 
 const AnimationsRoute = ({match}) => {
-  // const algorithm = useSelector(state => algorithmBySlugSelector(state, match.params.algorithmSlug))
-  const algorithm = useSelector(state => algorithmByIdSelector(state, match.params.algorithmId))
-  console.log("algorithm:", algorithm, "id:", match.params.algorithmId)
+  const dispatch = useDispatch()
 
-  if (!algorithm || !algorithm.has_animation) {
-    return <Redirect to = '/404' />
-  } else if (algorithm.id === minHeapId) {
+  useEffect(() => {
+    async function getItem(){
+      await dispatch(getAlgorithmThunk({'id': algorithmId}))
+    }
+    // if the algorithms list is empty, get the algorithm so that it appears on the sidebar menu
+    const promise = getItem()
+  }, [])
+
+  const algorithmId = parseInt(match.params.algorithmId)
+
+  if (algorithmId === minHeapId) {
     return <MinHeapAnimation />
   } else {
     return <Redirect to = '/404' />
