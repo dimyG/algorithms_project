@@ -6,4 +6,4 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = get_user_model()  # settings.AUTH_USER_MODEL or django USER model
-        fields = ('id', 'username')
+        fields = ('id', 'username', 'email')

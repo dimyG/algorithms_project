@@ -16,12 +16,20 @@ import {readCsrfFromCookie} from "../features/csrf/csrfSlice";
 //   avatar: null
 // }
 
-const initialUser = null
+const anonymousUser = null
+
+const createUser = (id, username, email = null, avatar = null) => {
+  // 'name' and 'avatar' properties are used by the devias pro template in various places
+  // console.log("creating user:", id, username, email, avatar)
+  return id ? {
+    'id': id, 'name': username, 'email': email, 'avatar': avatar
+  } : anonymousUser
+}
 
 const initialAuthState = {
   isAuthenticated: false,
   isInitialised: false,
-  user: initialUser
+  user: anonymousUser
 };
 
 const isValidToken = (accessToken) => {
@@ -70,7 +78,7 @@ const reducer = (state, action) => {
       return {
         ...state,
         isAuthenticated: false,
-        user: initialUser
+        user: anonymousUser
       };
     }
     case 'REGISTER': {
@@ -104,13 +112,9 @@ export const AuthProvider = ({ children }) => {
     // const response = await axios.post('/api/account/login', { email, password });
     try {
       const response = await axios.post('/dj-rest-auth/login/', {email, password});
-      const {access_token, user} = response.data;
-
-      // patch the user read from server response, to match the user object as it is expected by the devias pro template
-      // todo make patching better
-      user.name = user.username
-      user.avatar = null
-      const accessToken = access_token
+      const accessToken = response.data.access_token
+      const userData = response.data.user
+      const user = createUser(userData.pk, userData.username, userData.email)
 
       reduxDispatch(readCsrfFromCookie())
       setSession(accessToken);
@@ -143,7 +147,9 @@ export const AuthProvider = ({ children }) => {
         password1: password1,
         password2: password2,
       });
-      const {accessToken, user} = response.data;
+      const accessToken = response.data.access_token
+      const userData = response.data.user
+      const user = createUser(userData.pk, userData.username, userData.email)
 
       window.localStorage.setItem('accessToken', accessToken);
 
@@ -154,7 +160,7 @@ export const AuthProvider = ({ children }) => {
         }
       });
     } catch (error) {
-      console.log("register error:", typeof(error), error.message)
+      // console.log("register error:", typeof(error), error.message)
       let errorTextMessage
       if (error.response){
         errorTextMessage = JSON.stringify(error.response.data)
@@ -173,9 +179,10 @@ export const AuthProvider = ({ children }) => {
           setSession(accessToken);
 
           // user is not stored globally, he is stored in a Context, so no need to dispatch actions
+          // the token is sent with the Authorization header set by the setSession function
           const response = await axios.get('/users/current/');
-          const { username } = response.data;
-          const user = {name: username, avatar: null}
+          const { id, username, email } = response.data;
+          const user = createUser(id, username, email)
 
           dispatch({
             type: 'INITIALISE',
@@ -189,7 +196,7 @@ export const AuthProvider = ({ children }) => {
             type: 'INITIALISE',
             payload: {
               isAuthenticated: false,
-              user: initialUser
+              user: anonymousUser
             }
           });
         }
@@ -199,7 +206,7 @@ export const AuthProvider = ({ children }) => {
           type: 'INITIALISE',
           payload: {
             isAuthenticated: false,
-            user: initialUser
+            user: anonymousUser
           }
         });
       }
