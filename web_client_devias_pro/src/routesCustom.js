@@ -116,7 +116,7 @@ const routes = [
       {
         exact: true,
         path: '/',
-        component: () => <Redirect to={`/animations/${minHeapId}`} />
+        component: () => <Redirect to={`/animations/${minHeapId}/`} />
         // todo use algorithm's slug in the url but have in mind that the slug might change from the user
       },
       {

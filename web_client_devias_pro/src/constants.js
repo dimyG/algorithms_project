@@ -8,6 +8,6 @@ export const THEMES = {
   UNICORN: 'UNICORN'
 };
 
-export const minHeapId = 51
+export const minHeapId = 1
 export const demoUsername = "charis@test.com"
 export const demoPassword = "testthetest"

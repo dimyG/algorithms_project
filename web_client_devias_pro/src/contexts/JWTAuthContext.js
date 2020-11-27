@@ -169,11 +169,13 @@ export const AuthProvider = ({ children }) => {
         const accessToken = window.localStorage.getItem('accessToken');
 
         if (accessToken && isValidToken(accessToken)) {
+          // on reload page get the user so to be logged in if he has a valid jwt accessToken
           setSession(accessToken);
 
-          // todo now get the user so that on reload page you are still logged in if you have a valid accessToken
-          const response = await axios.get('/api/account/me');
-          const { user } = response.data;
+          // user is not stored globally, he is stored in a Context, so no need to dispatch actions
+          const response = await axios.get('/users/current/');
+          const { username } = response.data;
+          const user = {name: username, avatar: null}
 
           dispatch({
             type: 'INITIALISE',

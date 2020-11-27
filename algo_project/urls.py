@@ -17,14 +17,16 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from algorithms.views import AlgorithmViewSet, test
+from users.views import UserDetail, CurrentUser
 
 router = DefaultRouter()
 router.register(r'algorithms', AlgorithmViewSet)
 
-
 urlpatterns = [
     path('test/', test, name='test'),
     path('', include(router.urls)),
+    path('users/<int:pk>/', UserDetail.as_view()),
+    path('users/current/', CurrentUser.as_view()),
     path('admin/', admin.site.urls),
     path('dj-rest-auth/', include('dj_rest_auth.urls')),
     path('dj-rest-auth/registration/', include('dj_rest_auth.registration.urls'))
