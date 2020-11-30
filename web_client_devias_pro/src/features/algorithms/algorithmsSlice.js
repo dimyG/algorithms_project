@@ -134,7 +134,18 @@ export const deleteAlgorithmThunk = createAsyncThunk("algorithm/delete", async({
     return id
   }catch (error){
     console.log("delete algorithm thunk error:", JSON.stringify(error))
-    store.dispatch(algorithmsSlice.actions.addMessage({text: JSON.stringify(error.message), mode: "error", seen: false}))
+    let error_payload
+    if (error.response){
+      // Request was made and the server responded
+      error_payload = error.response.status === 401 ? "You have to Login first" : error.response.data
+    } else if (error.request) {
+      // Request was made but no response received
+      error_payload = error.request
+    } else {
+      // Request was not made, something happened in setting up the request
+      error_payload = JSON.stringify(error.message)
+    }
+    store.dispatch(algorithmsSlice.actions.addMessage({text: error_payload, mode: "error", seen: false}))
     return rejectWithValue(error.message)
   }
 })
