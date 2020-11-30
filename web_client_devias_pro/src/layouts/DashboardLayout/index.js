@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core';
 import NavBar from './NavBar';
 import TopBar from './TopBar';
+import Footer from "./Footer";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -48,6 +49,7 @@ const DashboardLayout = ({ children }) => {
         <div className={classes.contentContainer}>
           <div className={classes.content}>
             {children}
+            <Footer />
           </div>
         </div>
       </div>

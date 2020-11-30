@@ -16,6 +16,7 @@ import AlgorithmCreateUpdate from "./features/algorithms/AlgorithmCreateUpdate";
 import AlgorithmsListView from "./features/algorithms/AlgorithmsListView";
 import AnimationsRoute from "./features/animations/AnimationsRoute";
 import {minHeapId} from "./constants";
+import About from "./views/About";
 
 
 export const renderRoutes = (routes = []) => (
@@ -74,6 +75,12 @@ const routes = [
     exact: true,
     path: '/register-unprotected',
     component: lazy(() => import('src/views/auth/RegisterView'))
+  },
+  {
+    exact: true,
+    path: '/about',
+    layout: DashboardLayout,
+    component: About
   },
   {
     exact: true,

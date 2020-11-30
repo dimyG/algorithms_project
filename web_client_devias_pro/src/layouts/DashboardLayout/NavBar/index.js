@@ -368,6 +368,11 @@ const useStyles = makeStyles(() => ({
     cursor: 'pointer',
     width: 64,
     height: 64
+  },
+  about: {
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
   }
 }));
 
@@ -501,29 +506,31 @@ const NavBar = ({ onMobileClose, openMobile }) => {
             </List>
           ))}
         </Box>
+
         {/*<Divider />*/}
-        {/*<Box p={2}>*/}
+        {/*<Box className={classes.about}>*/}
         {/*  <Box*/}
         {/*    p={2}*/}
         {/*    borderRadius="borderRadius"*/}
         {/*    bgcolor="background.dark"*/}
         {/*  >*/}
-        {/*    <Typography*/}
-        {/*      variant="h6"*/}
-        {/*      color="textPrimary"*/}
-        {/*    >*/}
-        {/*      Need Help?*/}
-        {/*    </Typography>*/}
+        {/*    /!*<Typography*!/*/}
+        {/*    /!*  variant="h6"*!/*/}
+        {/*    /!*  color="textPrimary"*!/*/}
+        {/*    /!*>*!/*/}
+        {/*    /!*  Need Help?*!/*/}
+        {/*    /!*</Typography>*!/*/}
         {/*    <Link*/}
         {/*      variant="subtitle1"*/}
-        {/*      color="secondary"*/}
+        {/*      // color="secondary"*/}
         {/*      component={RouterLink}*/}
-        {/*      to="/docs"*/}
+        {/*      to="/about"*/}
         {/*    >*/}
-        {/*      Check our docs*/}
+        {/*      About*/}
         {/*    </Link>*/}
         {/*  </Box>*/}
         {/*</Box>*/}
+
       </PerfectScrollbar>
     </Box>
   );

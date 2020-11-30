@@ -23,6 +23,7 @@ import { createTheme } from 'src/theme';
 import routes, { renderRoutes } from 'src/routesCustom';
 import {Csrf} from "./features/csrf/csrf";
 import Messages from "./components/Messages";
+import GetAlgorithms from "./features/algorithms/GetAlgorithms";
 
 const jss = create({ plugins: [...jssPreset().plugins, rtl()] });
 const history = createBrowserHistory();
@@ -63,13 +64,15 @@ const App = () => {
           >
             <Csrf/>
             <Messages/>
+            {/* get algorithms when you load the app. we need this here so that the Min Heap algorithm is always present in the side bar */}
+            <GetAlgorithms/>
             <Router history={history}>
               <AuthProvider>
                 <GlobalStyles />
                 <ScrollReset />
                 <GoogleAnalytics />
                 <CookiesNotification />
-                <SettingsNotification />
+                {/*<SettingsNotification />*/}
                 {renderRoutes(routes)}
               </AuthProvider>
             </Router>

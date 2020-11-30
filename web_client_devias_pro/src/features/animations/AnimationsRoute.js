@@ -12,7 +12,7 @@ const AnimationsRoute = ({match}) => {
     async function getItem(){
       await dispatch(getAlgorithmThunk({'id': algorithmId}))
     }
-    // if the algorithms list is empty, get the algorithm so that it appears on the sidebar menu
+    // This is needed only if the algorithms list is empty. Get the algorithm so that it appears on the sidebar menu
     const promise = getItem()
   }, [])
 
