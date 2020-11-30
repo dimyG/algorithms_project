@@ -363,20 +363,20 @@ const MinHeapAnimation = () => {
     // setNumIterations(0)
   }
 
-  const speedOptions = ["Slow", "Medium", "Fast", "Ultra Fast"]
+  const speedOptions = ["Slow", "Normal", "Fast", "Super Fast"]
   // const playModeOptions = ["Playing", "Paused"]
   const playButtonText = inPlayMode ? "Pause" : "Play"
 
-  let frameTransitionDuration = 750
+  let frameTransitionDuration = 350
 
   if (speedMode === "Slow"){
-    frameTransitionDuration = 1250
-  } else if (speedMode === "Medium"){
-    frameTransitionDuration = 750
+    frameTransitionDuration = 1000
+  } else if (speedMode === "Normal"){
+    frameTransitionDuration = 600
   } else if (speedMode === "Fast"){
     frameTransitionDuration = 350
-  } else {
-    frameTransitionDuration = 100
+  } else if (speedMode === "Super Fast"){
+    frameTransitionDuration = 150
   }
 
   const generateIterationFrames = (dataItems) => {
