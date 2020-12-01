@@ -15,6 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.views.generic import TemplateView
 from rest_framework.routers import DefaultRouter
 from algorithms.views import AlgorithmViewSet, test
 from users.views import UserDetail, CurrentUser
@@ -24,11 +25,12 @@ router.register(r'algorithms', AlgorithmViewSet)
 
 urlpatterns = [
     path('test/', test, name='test'),
-    path('', include(router.urls)),
+    path('api/', include(router.urls)),
+    path('admin/', admin.site.urls),
     path('users/<int:pk>/', UserDetail.as_view()),
     path('users/current/', CurrentUser.as_view()),
-    path('admin/', admin.site.urls),
     path('dj-rest-auth/', include('dj_rest_auth.urls')),
-    path('dj-rest-auth/registration/', include('dj_rest_auth.registration.urls'))
+    path('dj-rest-auth/registration/', include('dj_rest_auth.registration.urls')),
+    path('', TemplateView.as_view(template_name='index.html'))
     # path('api-auth/', include('rest_framework.urls', namespace='rest_framework'))
 ]

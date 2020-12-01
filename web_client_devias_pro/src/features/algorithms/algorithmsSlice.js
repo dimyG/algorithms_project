@@ -19,7 +19,7 @@ async function long(){
 export const getAlgorithmsThunk = createAsyncThunk('algorithms/get', async (dummy, {rejectWithValue}) => {
   // const response = await axios.get('/algorithms/')
   try {
-    const response = await axios.get('/algorithms/')
+    const response = await axios.get('/api/algorithms/')
     // console.log('getAlgorithmsThunk response:', response)
     return response.data
   }catch (error) {
@@ -37,7 +37,7 @@ export const createAlgorithmThunk = createAsyncThunk('algorithms/create', async 
   // have in mind that when using session authentication backend csrf token is only necessary for authenticated requests
   const config = {headers: {'X-CSRFToken': csrfToken}}
   try{
-    const response = await axios.post('/algorithms/', body, config)
+    const response = await axios.post('/api/algorithms/', body, config)
     // console.log('createAlgorithmThunk response:', response)
     const successMessage = `algorithm ${response.data.name} created successfully`
     store.dispatch(algorithmsSlice.actions.addMessage({text: successMessage, mode: "success", seen: false}))
@@ -97,7 +97,7 @@ export const updateAlgorithmThunk = createAsyncThunk("algorithms/update", async 
   const config = {headers: {'X-CSRFToken': csrfToken}}
   try {
     // the trailing slash is needed by django in PUT requests
-    const response = await axios.put(`/algorithms/${id}/`, body, config)
+    const response = await axios.put(`/api/algorithms/${id}/`, body, config)
     // console.log("edit algorithm thunk response:", response)
     const successMessage = `algorithm ${response.data.name} updated successfully`
     store.dispatch(algorithmsSlice.actions.addMessage({text: successMessage, mode: "success", seen: false}))
@@ -112,7 +112,7 @@ export const updateAlgorithmThunk = createAsyncThunk("algorithms/update", async 
 export const getAlgorithmThunk = createAsyncThunk("algorithm/get", async ({id}, {rejectWithValue}) => {
   const config = {"data": {'id': id}}
   try {
-    const response = await axios.get(`/algorithms/${id}`, config)
+    const response = await axios.get(`/api/algorithms/${id}`, config)
     console.log("get algorithm thunk response:", response)
     return response.data
   } catch (error) {
@@ -127,7 +127,7 @@ export const deleteAlgorithmThunk = createAsyncThunk("algorithm/delete", async({
   const headers = {'X-CSRFToken': csrfToken}
   const config = {data: data, headers: headers}
   try{
-    const response = await axios.delete(`/algorithms/${id}/`, config)
+    const response = await axios.delete(`/api/algorithms/${id}/`, config)
     console.log("delete algorithm thunk response:", response)
     store.dispatch(algorithmsSlice.actions.addMessage({text: 'Algorithm deleted successfully', mode: "success", seen: false}))
     // the delete response.data is an empty string not the deleted item
@@ -155,7 +155,7 @@ export const deleteAlgorithmsThunk = createAsyncThunk("algorithms/delete", async
   const headers = {'X-CSRFToken': csrfToken}
   const config = {data: data, headers: headers}
   try{
-    const response = await axios.delete("/algorithms/delete_many/", config)
+    const response = await axios.delete("/api/algorithms/delete_many/", config)
     console.log("delete many algorithms thunk response:", response)
     // the delete response.data is an empty string not the deleted item
     const successMessage = `${ids.length} algorithms deleted successfully`

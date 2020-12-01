@@ -9,7 +9,12 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "postinstall": "npm run build"
+  },
+  "engines": {
+    "node": "12.x",
+    "npm": "6.x"
   },
   "browserslist": {
     "production": [
