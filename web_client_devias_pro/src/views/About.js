@@ -36,7 +36,7 @@ const About = () => {
 
             I have used redux to store global state and the Devias Kit for the layout (it uses the Material UI components library).
             The back end is a simple API built with the django rest framework. You can find the project's
-            source code in <Link target="_blank" href={"https://github.com/dimyG"} color="secondary">this</Link> github repository.<br/><br/>
+            source code in <Link target="_blank" href={"https://github.com/dimyG/algorithms_project"} color="secondary">this</Link> github repository.<br/><br/>
             Thanks for visiting, have nice day!
           </Typography>
         </CardContent>
