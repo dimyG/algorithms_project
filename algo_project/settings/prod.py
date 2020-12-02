@@ -31,9 +31,10 @@ TEMPLATES[0]['DIRS'].append(
     os.path.join(REACT_APP_DIR, 'build')
 )
 
-DATABASES = {}
-
 # Reads db from DATABASE_URL env variable. if variable doesn't exist doesn't affect the Databases dictionary
 # DATABASE_URL format: postgres://USER:PASSWORD@HOST:PORT/NAME
 db_from_env = dj_database_url.config()
-DATABASES['default'].update(db_from_env)
+
+DATABASES = {
+    'default': db_from_env
+}
