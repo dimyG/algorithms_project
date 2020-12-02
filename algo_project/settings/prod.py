@@ -11,7 +11,7 @@ static_host_env = os.environ.get('DJANGO_STATIC_HOST', '')
 
 SECRET_KEY = secret_key_env
 
-ALLOWED_HOSTS = ['127.0.0.1']
+ALLOWED_HOSTS = ['https://algorithms-project.herokuapp.com/', '127.0.0.1']
 
 STATIC_HOST = static_host_env
 

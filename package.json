@@ -1,0 +1,11 @@
+{
+  "name": "algorithms-project",
+  "version": "0.1.0",
+  "scripts": {
+    "postinstall": "npm install --prefix web_client_devias_pro"
+  },
+  "engines": {
+    "node": "12.x",
+    "npm": "6.x"
+  }
+}
