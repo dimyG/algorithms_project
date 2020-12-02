@@ -14,7 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.views.generic import TemplateView
 from rest_framework.routers import DefaultRouter
 from algorithms.views import AlgorithmViewSet, test
@@ -31,6 +31,7 @@ urlpatterns = [
     path('users/current/', CurrentUser.as_view()),
     path('dj-rest-auth/', include('dj_rest_auth.urls')),
     path('dj-rest-auth/registration/', include('dj_rest_auth.registration.urls')),
-    path('', TemplateView.as_view(template_name='index.html'))
+    re_path(r'^(?P<path>.*)/$', TemplateView.as_view(template_name='index.html')),  # this matches all except '/'
+    path('', TemplateView.as_view(template_name='index.html'))  # This matches the '/'
     # path('api-auth/', include('rest_framework.urls', namespace='rest_framework'))
 ]

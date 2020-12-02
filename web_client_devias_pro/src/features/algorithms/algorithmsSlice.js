@@ -112,7 +112,7 @@ export const updateAlgorithmThunk = createAsyncThunk("algorithms/update", async 
 export const getAlgorithmThunk = createAsyncThunk("algorithm/get", async ({id}, {rejectWithValue}) => {
   const config = {"data": {'id': id}}
   try {
-    const response = await axios.get(`/api/algorithms/${id}`, config)
+    const response = await axios.get(`/api/algorithms/${id}/`, config)
     console.log("get algorithm thunk response:", response)
     return response.data
   } catch (error) {

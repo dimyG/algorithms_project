@@ -397,7 +397,7 @@ const NavBar = ({ onMobileClose, openMobile }) => {
     items.push(
       {
         title: algorithm.name,
-        href: `/animations/${algorithm.id}`
+        href: `/animations/${algorithm.id}/`
       }
     )
   }
