@@ -14,9 +14,9 @@ import {
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    backgroundColor: theme.palette.common.black,
+    backgroundColor: theme.palette.background.secondary,
     color: theme.palette.common.white,
-    maxWidth: 600,
+    maxWidth: 700,
     position: 'fixed',
     bottom: 0,
     left: 0,
@@ -60,18 +60,19 @@ const CookiesNotification = () => {
           color="inherit"
         >
           We use Cookies to ensure that we give you the best experience on our
-          website. Read our
-          {' '}
-          <Link
-            component="a"
-            color="inherit"
-            underline="always"
-            href="https://devias.io/privacy-policy"
-            target="_blank"
-          >
-            Privacy Policy
-          </Link>
-          .
+          website.
+          {/*Read our*/}
+          {/*{' '}*/}
+          {/*<Link*/}
+          {/*  component="a"*/}
+          {/*  color="inherit"*/}
+          {/*  underline="always"*/}
+          {/*  href="https://devias.io/privacy-policy"*/}
+          {/*  target="_blank"*/}
+          {/*>*/}
+          {/*  Privacy Policy*/}
+          {/*</Link>*/}
+          {/*.*/}
         </Typography>
         <Box
           mt={2}

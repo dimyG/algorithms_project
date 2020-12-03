@@ -101,38 +101,38 @@ const Settings = () => {
         >
           Settings
         </Typography>
-        <Box
-          mt={2}
-          px={1}
-        >
-          <FormControlLabel
-            control={(
-              <Switch
-                checked={values.direction === 'rtl'}
-                edge="start"
-                name="direction"
-                onChange={(event) => handleChange('direction', event.target.checked ? 'rtl' : 'ltr')}
-              />
-            )}
-            label="RTL"
-          />
-        </Box>
-        <Box
-          mt={2}
-          px={1}
-        >
-          <FormControlLabel
-            control={(
-              <Switch
-                checked={values.responsiveFontSizes}
-                edge="start"
-                name="direction"
-                onChange={(event) => handleChange('responsiveFontSizes', event.target.checked)}
-              />
-            )}
-            label="Responsive font sizes"
-          />
-        </Box>
+        {/*<Box*/}
+        {/*  mt={2}*/}
+        {/*  px={1}*/}
+        {/*>*/}
+        {/*  <FormControlLabel*/}
+        {/*    control={(*/}
+        {/*      <Switch*/}
+        {/*        checked={values.direction === 'rtl'}*/}
+        {/*        edge="start"*/}
+        {/*        name="direction"*/}
+        {/*        onChange={(event) => handleChange('direction', event.target.checked ? 'rtl' : 'ltr')}*/}
+        {/*      />*/}
+        {/*    )}*/}
+        {/*    label="RTL"*/}
+        {/*  />*/}
+        {/*</Box>*/}
+        {/*<Box*/}
+        {/*  mt={2}*/}
+        {/*  px={1}*/}
+        {/*>*/}
+        {/*  <FormControlLabel*/}
+        {/*    control={(*/}
+        {/*      <Switch*/}
+        {/*        checked={values.responsiveFontSizes}*/}
+        {/*        edge="start"*/}
+        {/*        name="direction"*/}
+        {/*        onChange={(event) => handleChange('responsiveFontSizes', event.target.checked)}*/}
+        {/*      />*/}
+        {/*    )}*/}
+        {/*    label="Responsive font sizes"*/}
+        {/*  />*/}
+        {/*</Box>*/}
         <Box mt={2}>
           <TextField
             fullWidth

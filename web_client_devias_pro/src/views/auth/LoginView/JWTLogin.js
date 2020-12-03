@@ -27,8 +27,8 @@ const JWTLogin = ({ className, ...rest }) => {
   return (
     <Formik
       initialValues={{
-        email: demoUsername,
-        password: demoPassword,
+        email: '',
+        password: '',
         submit: null
       }}
       validationSchema={Yup.object().shape({
@@ -123,7 +123,7 @@ const JWTLogin = ({ className, ...rest }) => {
               severity="info"
             >
               <div>
-                Use
+                You can login as
                 {' '}
                 <b>{demoUsername}</b>
                 {' '}

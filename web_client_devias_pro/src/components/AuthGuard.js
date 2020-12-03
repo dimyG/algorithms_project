@@ -11,7 +11,7 @@ const AuthGuard = ({ children }) => {
   const dispatch = useDispatch()
 
   if (!isAuthenticated) {
-    const targetPath = location.search ? location.pathname : `${location.pathname}/${location.search}`
+    const targetPath = !location.search ? location.pathname : `${location.pathname}/${location.search}`
     dispatch(updatePath(targetPath))  // store the target path to global store to redirect the user there after login
     return <Redirect to="/login" />;
   }

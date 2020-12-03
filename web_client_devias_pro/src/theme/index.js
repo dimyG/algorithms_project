@@ -7,6 +7,7 @@ import {
 import { THEMES } from 'src/constants';
 import { softShadows, strongShadows } from './shadows';
 import typography from './typography';
+import { fade } from '@material-ui/core/styles/colorManipulator';
 
 const baseOptions = {
   direction: 'ltr',
@@ -54,7 +55,8 @@ const themesOptions = [
       background: {
         default: colors.common.white,
         dark: '#f4f6f8',
-        paper: colors.common.white
+        paper: colors.common.white,
+        secondary: fade(colors.indigo[600], 0.9)
       },
       primary: {
         main: colors.indigo[600]
@@ -92,7 +94,8 @@ const themesOptions = [
       background: {
         default: '#282C34',
         dark: '#1c2025',
-        paper: '#282C34'
+        paper: '#282C34',
+        secondary: fade('#8a85ff', 0.9)
       },
       primary: {
         main: '#8a85ff'
@@ -130,7 +133,8 @@ const themesOptions = [
       background: {
         default: '#2a2d3d',
         dark: '#222431',
-        paper: '#2a2d3d'
+        paper: '#2a2d3d',
+        secondary: fade('#a67dff', 0.9)
       },
       primary: {
         main: '#a67dff'

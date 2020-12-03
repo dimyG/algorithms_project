@@ -36,7 +36,8 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'allauth',
     'allauth.account',
-    # 'allauth.socialaccount',
+    'allauth.socialaccount',  # it is needed to avoid error on deleting a user
+
     'dj_rest_auth',
     'dj_rest_auth.registration',
     'algorithms',
