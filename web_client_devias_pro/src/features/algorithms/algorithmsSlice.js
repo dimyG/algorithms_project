@@ -151,16 +151,22 @@ export const deleteAlgorithmThunk = createAsyncThunk("algorithm/delete", async({
 })
 
 export const deleteAlgorithmsThunk = createAsyncThunk("algorithms/delete", async({ids, csrfToken}, {rejectWithValue}) =>{
-  const data = ids.map(id => {return {"id": id}})
+  const state = store.getState()
+  const noAnimationIds = ids.filter(id => {
+    // algorithms with animation are protected from deletion
+    const algorithm = algorithmByIdSelector(state, id)
+    if (algorithm && !algorithm.has_animation) return id
+  })
+  const data = noAnimationIds.map(id => {return {"id": id}})
   const headers = {'X-CSRFToken': csrfToken}
   const config = {data: data, headers: headers}
   try{
     const response = await axios.delete("/api/algorithms/delete_many/", config)
     console.log("delete many algorithms thunk response:", response)
     // the delete response.data is an empty string not the deleted item
-    const successMessage = `${ids.length} algorithms deleted successfully`
+    const successMessage = `${noAnimationIds.length} algorithms deleted successfully`
     store.dispatch(algorithmsSlice.actions.addMessage({text: successMessage, mode: "success", seen: false}))
-    return {ids, responseData: response.data}
+    return {ids: noAnimationIds, responseData: response.data}
   }catch (error){
     console.log("delete many algorithms thunk error:", JSON.stringify(error))
     store.dispatch(algorithmsSlice.actions.addMessage({text: JSON.stringify(error.message), mode: "error", seen: false}))

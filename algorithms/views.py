@@ -7,6 +7,7 @@ from django.utils.decorators import method_decorator
 from django.template.response import TemplateResponse
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework import status
 import time
 
 
@@ -22,6 +23,13 @@ decorators = [csrf_protect]
 @method_decorator(decorators, name='dispatch')
 class AlgorithmViewSet(AlgorithmMixin, viewsets.ModelViewSet):
 
+    def destroy(self, request, *args, **kwargs):
+        algorithm = self.get_object()
+        if algorithm.has_animation:
+            message = "Only Gandalf can delete {}...".format(algorithm.name)
+            return Response(data=message, status=status.HTTP_403_FORBIDDEN)
+        return super(AlgorithmViewSet, self).destroy(request, *args, **kwargs)
+
     def list(self, request, *args, **kwargs):
         response = super(AlgorithmViewSet, self).list(request, *args, **kwargs)
         # time.sleep(0.5)
@@ -36,9 +44,11 @@ class AlgorithmViewSet(AlgorithmMixin, viewsets.ModelViewSet):
     @action(detail=False, methods=['delete'])
     def delete_many(self, request, *args, **kwargs):
         ids = []
+        animation_ids = Algorithm.objects.filter(has_animation=True).values_list('id', flat=True)
         for item in request.data:
             algorithm_id = item.get("id", None)
-            if algorithm_id:
+            # don't delete algorithms with animations
+            if algorithm_id and algorithm_id not in animation_ids:
                 ids.append(algorithm_id)
         response = Algorithm.objects.filter(id__in=ids).delete()
         return Response(response)
