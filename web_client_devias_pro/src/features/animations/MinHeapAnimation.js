@@ -260,8 +260,26 @@ const useStyles = makeStyles((theme) => ({
     '& + &': {
       marginLeft: theme.spacing(1)
     },
-    minWidth: 100
-  }
+    minWidth: 100,
+    '@media (max-width:420px)': {
+      minWidth: 70,
+      paddingLeft: theme.spacing(0.5),
+      paddingRight: theme.spacing(0.5)
+    },
+    // another way to control css properties based on size, is by using the built in theme's breakpoints
+    // material's UI xs breakpoint is 0-600 px so it doesn't fit for this case.
+    // [theme.breakpoints.down('xs')]: {
+    //   minWidth: 70,
+    // },
+
+    // from the element with class action, select the children elements with class SvgIcon
+    '& .SvgIcon': {
+      fontSize: '1.2rem',
+      '@media (max-width:420px)': {
+        fontSize: '0.8rem',
+      }
+    }
+  },
 }));
 
 const MinHeapAnimation = () => {
@@ -475,14 +493,14 @@ const MinHeapAnimation = () => {
               color="secondary"
               variant="contained"
               startIcon={
-                <SvgIcon fontSize="small">
+                <SvgIcon className='SvgIcon'>
                   {inPlayMode ? <PauseIcon /> : <PlayIcon />}
                 </SvgIcon>
               }
               disabled={isFullyAnimated}
               onClick={() => onPlayClick()}
               >
-              {playButtonText}
+              <Typography variant="h3">{playButtonText}</Typography>
             </Button>
 
             <Button
@@ -490,14 +508,14 @@ const MinHeapAnimation = () => {
               color="secondary"
               variant="contained"
               startIcon={
-                <SvgIcon fontSize="small">
+                <SvgIcon className='SvgIcon'>
                   <FastForwardIcon />
                 </SvgIcon>
               }
               disabled={inPlayMode || isFullyAnimated}
               onClick={onNextClick}
               >
-                Next
+              <Typography variant="h3">Next</Typography>
             </Button>
 
             <Button
@@ -505,21 +523,22 @@ const MinHeapAnimation = () => {
               color="secondary"
               variant="contained"
               startIcon={
-                <SvgIcon fontSize="small">
+                <SvgIcon className='SvgIcon'>
                   <RefreshCwIcon />
                 </SvgIcon>
               }
               onClick={onRestartClick}
               >
-              Restart
+              <Typography variant="h3">Restart</Typography>
             </Button>
 
           </Grid></Box>
           <Box mb={1}><Grid item >
+            <Typography variant="h3">
             <TextField
               className={classes.action}
               variant="outlined"
-              size={"small"}
+              size="small"
               label="Speed"
               name="speed"
               onChange={handleSpeedChange}
@@ -536,6 +555,7 @@ const MinHeapAnimation = () => {
                 </option>
               ))}
             </TextField>
+            </Typography>
           </Grid></Box>
         </Grid>
       </Box>

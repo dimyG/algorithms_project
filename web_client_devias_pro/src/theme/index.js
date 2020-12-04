@@ -6,8 +6,18 @@ import {
 } from '@material-ui/core';
 import { THEMES } from 'src/constants';
 import { softShadows, strongShadows } from './shadows';
-import typography from './typography';
+import originalTypography from './typography';
 import { fade } from '@material-ui/core/styles/colorManipulator';
+
+const typography = {
+  ...originalTypography,
+  h3: {
+    fontSize: '0.85rem',
+    '@media (max-width:420px)': {
+      fontSize: '0.6rem',
+    },
+ },
+}
 
 const baseOptions = {
   direction: 'ltr',
@@ -177,7 +187,10 @@ export const createTheme = (config = {}) => {
   );
 
   if (config.responsiveFontSizes) {
-    theme = responsiveFontSizes(theme);
+    const options = {
+      breakpoints: ['xs', 'sm', 'md', 'lg']
+    }
+    theme = responsiveFontSizes(theme, options);
   }
 
   return theme;
