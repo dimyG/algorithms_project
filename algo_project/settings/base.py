@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
 import os
+import datetime
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -142,6 +143,10 @@ REST_FRAMEWORK = {
 # dj-rest-auth settings
 REST_USE_JWT = True
 JWT_AUTH_COOKIE = 'algo_project_auth'
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': datetime.timedelta(minutes=30)  # default value is 5 minutes
+    # todo use refresh tokens
+}
 
 # django-allauth settings
 ACCOUNT_EMAIL_VERIFICATION = 'none'  # log in with an unverified e-mail address

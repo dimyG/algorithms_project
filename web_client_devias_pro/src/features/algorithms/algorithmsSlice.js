@@ -10,6 +10,9 @@ async function long(){
   return i
 }
 
+// todo in 401 responses and especially on "not valid token" responses, log the user out so not to have the
+// inconsistency of appearing logged in while in reality his token has expired and he is logged out
+
 // Have in mind:
 // payloadCreator is a callback function that should return a promise containing the result of some asynchronous logic.
 // It may also return a value synchronously. If there is an error, it should either return a rejected promise
