@@ -143,6 +143,10 @@ REST_FRAMEWORK = {
 # dj-rest-auth settings
 REST_USE_JWT = True
 JWT_AUTH_COOKIE = 'algo_project_auth'
+# By default dj-rest-auth doesn't require the csrf token for auth views when using the jwt authentication method.
+# You have to externally enable it with the following settings
+# JWT_AUTH_COOKIE_USE_CSRF = True
+# JWT_AUTH_COOKIE_ENFORCE_CSRF_ON_UNAUTHENTICATED = True
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': datetime.timedelta(minutes=30)  # default value is 5 minutes
     # todo use refresh tokens

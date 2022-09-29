@@ -34,6 +34,10 @@ class AlgorithmViewSet(AlgorithmMixin, viewsets.ModelViewSet):
         response = super(AlgorithmViewSet, self).list(request, *args, **kwargs)
         # time.sleep(0.5)
         response.set_cookie('test', 'test_value')
+        # csrf cookie is not set by a GET method call (since it is a safe method) so if you want it, externally set it
+        # from django.middleware.csrf import get_token
+        # csrf_token = get_token(request)
+        # set cookie(csrf token)
         return response
 
     def retrieve(self, request, *args, **kwargs):

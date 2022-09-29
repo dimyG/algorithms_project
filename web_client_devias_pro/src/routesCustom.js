@@ -86,6 +86,7 @@ const routes = [
     exact: true,
     path: '/algorithms/list',
     layout: DashboardLayout,
+    // lazy load the component?
     component: AlgorithmsListView
   },
   {
