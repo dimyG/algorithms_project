@@ -15,6 +15,7 @@ import {
 import {Play as PlayIcon, Pause as PauseIcon, FastForward as FastForwardIcon, RefreshCw as RefreshCwIcon} from "react-feather";
 import Page from "../../components/Page";
 import { useTheme } from "@material-ui/core/styles";
+import _ from "lodash";
 
 class Queue {
   constructor(items = []) {
@@ -38,26 +39,22 @@ class DataItems {
     this.frameQueue = frameQueue
   }
 
+  // O(m) space complexity, where m is the number if attributes in the item
   enqueueFrame = (frameData = this.items) => {
     // A frame is the array of items (items have new coordinates in each frame).
     // console.log("  enqueueing frame:", frameData)
-    this.frameQueue.enqueue(frameData)
+    this.frameQueue.enqueue(_.cloneDeep(frameData))  // enqueued data should not change. They should not be references [...frameData] also works
   }
 
-  swap = (item1, item2) => {
-    // Swap their coordinates
-    // d3 identifies elements by their index. We identify elements by their value.
-    // This means that the index-value pair must remain the same.
-    // Think of it like this: An item is moving when its x and y coordinates change, not when its index change
-    const index1 = this.items.indexOf(item1)
-    const index2 = this.items.indexOf(item2)
+  // O(1) time complexity
+  swap = (index1, index2) => {
+    // An item changes position if its x and y coordinates change
     if (index1 === -1 || index2 === -2) return
-    // console.log("  swapping values:", item1.value, `${index1}`, item2.value, `${index2}`, " ...")
-    this.items = this.items.map((item, index) => {
-      if (index === index1) return {...item2, value: item.value, id: item.id}
-      else if (index === index2) return {...item1, value: item.value, id: item.id}
-      else return {...item}
-    })
+    let item1 = this.items[index1]
+    let item2 = this.items[index2]
+    // this change improves time complexity from O(n) to O(1)
+    this.items[index1] = {...item2, value: item1.value, id: item1.id}
+    this.items[index2] = {...item1, value: item2.value, id: item2.id}
     this.enqueueFrame()
     // console.log("  all items After swap:", this.items)
   }
@@ -69,6 +66,30 @@ class DataItems {
       return {...item}
     })
     this.enqueueFrame()
+  }
+
+  reheap = ( itemIndex) => {
+    // itemIndex: the index of the item that was just swapped inwards. We want to see if it needs to be swapped again
+    // todo use the item.heapIndex property to avoid sorting
+    const sortedHeapItems = this.heapItemsSortedByIndex()  // avoid sorting
+    const item = this.items[itemIndex]
+    // const item = this.items.filter((item) => item.heapIndex = heapIndex+1)[0]
+    // console.log("  reheaping item:", item)
+    const smallerKid = this.getKidForSwap(item, sortedHeapItems)
+    if (!smallerKid) return  // item has no kids
+    const smallerKidIndex = this.items.indexOf(smallerKid)  // temporary solution
+    this.swap(itemIndex, smallerKidIndex)
+    // "reheap" again starting from the swapped item that took the place of the child
+    this.reheap(itemIndex)  // have in mind that currently the heapIndex property starts from 1 not 0
+  }
+
+  isCompareItem = (index) => {
+    if (index < 0) return false  // if all items have been compared
+    // console.log("Items:", this.items)
+    let heapHead = this.heapHead()
+    let item = this.items[index]
+    // console.log("isCompareItem index:", index, "compareItem:", item)
+    return (!item.heapIndex && Math.abs(item.x - heapHead.x) < 1)
   }
 
   heapItems = () => {
@@ -155,21 +176,6 @@ class DataItems {
     // The first nonHeapItem has the smallest X coordinate so it is the furthest one on the left. If it is greater
     // than the viewBox width, then it has been moved completely on the left and all items have been processed.
     return this.firstNonHeapItem().x > svgViewBoxWidth
-  }
-
-  reheap = (heapIndex= 0) => {
-    // todo use the item.heapIndex property to avoid sorting
-    // console.log("reheaping from index:", heapIndex)
-    const sortedHeapItems = this.heapItemsSortedByIndex()
-    const item = sortedHeapItems[heapIndex]
-    // const item = this.items.filter((item) => item.heapIndex = heapIndex+1)[0]
-    // console.log("  reheaping item:", item)
-    const smallerKid = this.getKidForSwap(item, sortedHeapItems)
-    if (!smallerKid) return  // item has no kids
-    this.swap(item, smallerKid)
-    // reheap again starting from the swapped kid
-    this.reheap(smallerKid.heapIndex-1)  // have in mind that currently the heapIndex property starts from 1 not 0
-    // console.log("reheap of item", item, "with index", heapIndex, "completed")
   }
 
 }
@@ -283,6 +289,8 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const MinHeapAnimation = () => {
+  // the first item to be checked for comparison with the heap head, is the last item of the array
+  const initialCompareItemIndex = initialNumberItems.length - 1
   const classes = useStyles()
   const [frame, setFrame] = useState(initialItems)
   const [heapData, setHeapData] = useState(initialHeapItems)
@@ -292,6 +300,7 @@ const MinHeapAnimation = () => {
   const [speedMode, setSpeedMode] = useState("Fast")
   const [inPlayMode, setInPlayMode] = useState(false)
   const [currentIterationFinished, setCurrentIterationFinished] = useState(true)
+  const [compareItemIndex, setCompareItemIndex] = useState(initialCompareItemIndex)
   // const [numIterations, setNumIterations] = useState(0)
   const theme = useTheme()
   const ref = useRef()
@@ -299,8 +308,6 @@ const MinHeapAnimation = () => {
   const isFullyAnimated = dataItems.isFullyAnimated()
 
   useEffect(() => {
-    // todo Currently it's not d3 that rerenders when the data change. The effect is running in every data change and
-    // runs d3 from the beginning with the new data!
 
     const circlesTheme = theme.heapCirclesTheme
 
@@ -365,7 +372,7 @@ const MinHeapAnimation = () => {
     // Notice that one iteration can contain more than one animation frames. This means that the effect will run
     // for each frame within the same iteration. In these cases we don't want to reiterate. We only want to reiterate
     // when the previous iteration has finished.
-    if (!isFullyAnimated && inPlayMode && currentIterationFinished) iterate(dataItems)
+    if (!isFullyAnimated && inPlayMode && currentIterationFinished) moveItems(dataItems, compareItemIndex)
 
   }, [
     frame, heapData, inPlayMode, currentIterationFinished,
@@ -378,6 +385,7 @@ const MinHeapAnimation = () => {
     setDataItems(new DataItems(initialItems))
     setInPlayMode(false)
     setCurrentIterationFinished(true)
+    setCompareItemIndex(initialCompareItemIndex)
     // setNumIterations(0)
   }
 
@@ -397,17 +405,26 @@ const MinHeapAnimation = () => {
     frameTransitionDuration = 150
   }
 
-  const generateIterationFrames = (dataItems) => {
+  const generateCurrentStepFrames = (dataItems, compareItemIndex) => {
+    // we use the compareItemIndex to get directly the current compare item instead of looping through the items array
+    // this improves time complexity from O(n) to O(1)
     // const dataItems = new DataItems(prevItems)
-    const heapHead = dataItems.heapHead()
-    for (const item of dataItems.items) {
-      if (!item.heapIndex && Math.abs(item.x - heapHead.x) < 1) {
-        if (item.value > heapHead.value){
-          // console.log("pushing item to heap")
-          dataItems.swap(item, heapHead)
-          dataItems.reheap()
-          return dataItems.frameQueue
-        }
+    let heapHeadIndex = dataItems.heapHeadIndex()
+    let heapHead = dataItems.items[heapHeadIndex]
+    if (dataItems.isCompareItem(compareItemIndex)) {
+      // if the current item is next to the heap head, move the pointer (the iterFromIndex)
+      // to the next item to check for comparison (which is the previous one in the list)
+      setCompareItemIndex(prevIndex => {
+        let newIndex = prevIndex - 1
+        if (newIndex < 0) newIndex = 0
+        return newIndex
+      })
+      const item = dataItems.items[compareItemIndex]
+      if (item.value > heapHead.value) {
+        // console.log("pushing item to heap")
+        dataItems.swap(compareItemIndex, heapHeadIndex)
+        dataItems.reheap(compareItemIndex)
+        return dataItems.frameQueue
       }
     }
     dataItems.moveRight()
@@ -432,11 +449,11 @@ const MinHeapAnimation = () => {
     // if (!play) throw "error"
   }
 
-  const iterate = async (dataItems) => {
+  const moveItems = async (dataItems, compareItemIndex) => {
     setCurrentIterationFinished(false)
     console.log("Iterating...")
     // setNumIterations(prevCount => prevCount + 1)
-    const frameQueue = generateIterationFrames(dataItems)
+    const frameQueue = generateCurrentStepFrames(dataItems, compareItemIndex)
     console.log(" Animating queue:", frameQueue)
     const promise = await animateQueue(frameQueue)
     console.log(" Queue animated")
@@ -446,7 +463,7 @@ const MinHeapAnimation = () => {
   }
 
   const onNextClick = async () => {
-    await iterate(dataItems)
+    await moveItems(dataItems, compareItemIndex)
   }
 
   const onPlayClick = () => {

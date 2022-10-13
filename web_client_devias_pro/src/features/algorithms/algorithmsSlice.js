@@ -183,6 +183,7 @@ const updateItemsById = (items, updatedItem) => {
   !oldItem ? items.push(updatedItem) : items[items.indexOf(oldItem)] = updatedItem
 }
 
+// todo use createEntityAdapter for the algorithms slice
 export const algorithmsSlice = createSlice({
   name: 'algorithms',
   initialState: {
