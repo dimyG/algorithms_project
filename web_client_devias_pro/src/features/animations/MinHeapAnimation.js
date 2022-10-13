@@ -37,6 +37,7 @@ class DataItems {
   constructor(items = [], frameQueue = new Queue(), heap = null) {
     this.items = items
     this.frameQueue = frameQueue
+    this.heapHeadIndex = numbersLength  // the initial heap head is the first item after the number items
   }
 
   // O(m) space complexity, where m is the number if attributes in the item
@@ -46,16 +47,27 @@ class DataItems {
     this.frameQueue.enqueue(_.cloneDeep(frameData))  // enqueued data should not change. They should not be references [...frameData] also works
   }
 
+  updateHeapHeadIndex = (index1, index2) => {
+    // if one of the two items is the heap head, update the heapHeadIndex attribute.
+    if (this.items[index1].heapIndex === heapIndexStart) {
+      this.heapHeadIndex = index1
+    }
+    else if (this.items[index2].heapIndex === heapIndexStart) {
+      this.heapHeadIndex = index2
+    }
+  }
+
   // O(1) time complexity
   swap = (index1, index2) => {
     // An item changes position if its x and y coordinates change
+    console.log("  swapping items:", index1, index2)
     if (index1 === -1 || index2 === -2) return
     let item1 = this.items[index1]
     let item2 = this.items[index2]
-    // this change improves time complexity from O(n) to O(1)
     this.items[index1] = {...item2, value: item1.value, id: item1.id}
     this.items[index2] = {...item1, value: item2.value, id: item2.id}
     this.enqueueFrame()
+    this.updateHeapHeadIndex(index1, index2)
     // console.log("  all items After swap:", this.items)
   }
 
@@ -113,16 +125,7 @@ class DataItems {
   }
 
   heapHead = () => {
-    return this.itemByCoords(heapHeadX, heapHeadY)
-  }
-
-  heapHeadIndex = () => {
-    const heapHead = this.heapHead()
-    return this.items.indexOf(heapHead)
-  }
-
-  itemIndexFromHeapIndex = (heapIndex) => {
-    return this.items.length + heapIndex
+    return this.items[this.heapHeadIndex]
   }
 
   itemKids = (heapItem, sortedHeapItems=this.heapItemsSortedByIndex()) => {
@@ -202,6 +205,7 @@ const firstItemY = heapHeadY + 2.1 * circleRadius
 // +1 since the last item is 1 step from heap head, and +2 to continue 2 steps after all items have been compared with heap head
 const maxIterations = numbersLength * 2 + 1 + 2
 const heapSize = 7
+const heapIndexStart = 1
 
 const initialNumberItems = Array(numbersLength).fill(0).map((item, index) => ({
   // the id is needed so that every item object is unique (and items.indexOf(item) returns always the unique item's index)
@@ -209,13 +213,13 @@ const initialNumberItems = Array(numbersLength).fill(0).map((item, index) => ({
 }))
 
 const initialHeapItems = [
-  {id: initialNumberItems.length+1, x: heapHeadX, y: heapHeadY, value: 0, heapIndex: 1},
-  {id: initialNumberItems.length+2, x: heapHeadX-heapItemsDistance*1.3, y: heapHeadY-heapItemsDistance, value: 0, heapIndex: 2},
-  {id: initialNumberItems.length+3, x: heapHeadX+heapItemsDistance*1.3, y: heapHeadY-heapItemsDistance, value: 0, heapIndex: 3},
-  {id: initialNumberItems.length+4, x: heapHeadX-heapItemsDistance*1.3-circleRadius*1.1, y: heapHeadY-heapItemsDistance*2.2, value: 0, heapIndex: 4},
-  {id: initialNumberItems.length+5, x: heapHeadX-heapItemsDistance*1.3+circleRadius*1.1, y: heapHeadY-heapItemsDistance*2.2, value: 0, heapIndex: 5},
-  {id: initialNumberItems.length+6, x: heapHeadX+heapItemsDistance*1.3-circleRadius*1.1, y: heapHeadY-heapItemsDistance*2.2, value: 0, heapIndex: 6},
-  {id: initialNumberItems.length+7, x: heapHeadX+heapItemsDistance*1.3+circleRadius*1.1, y: heapHeadY-heapItemsDistance*2.2, value: 0, heapIndex: 7},
+  {id: initialNumberItems.length+1, x: heapHeadX, y: heapHeadY, value: 0, heapIndex: heapIndexStart},
+  {id: initialNumberItems.length+2, x: heapHeadX-heapItemsDistance*1.3, y: heapHeadY-heapItemsDistance, value: 0, heapIndex: heapIndexStart+1},
+  {id: initialNumberItems.length+3, x: heapHeadX+heapItemsDistance*1.3, y: heapHeadY-heapItemsDistance, value: 0, heapIndex: heapIndexStart+2},
+  {id: initialNumberItems.length+4, x: heapHeadX-heapItemsDistance*1.3-circleRadius*1.1, y: heapHeadY-heapItemsDistance*2.2, value: 0, heapIndex: heapIndexStart+3},
+  {id: initialNumberItems.length+5, x: heapHeadX-heapItemsDistance*1.3+circleRadius*1.1, y: heapHeadY-heapItemsDistance*2.2, value: 0, heapIndex: heapIndexStart+4},
+  {id: initialNumberItems.length+6, x: heapHeadX+heapItemsDistance*1.3-circleRadius*1.1, y: heapHeadY-heapItemsDistance*2.2, value: 0, heapIndex: heapIndexStart+5},
+  {id: initialNumberItems.length+7, x: heapHeadX+heapItemsDistance*1.3+circleRadius*1.1, y: heapHeadY-heapItemsDistance*2.2, value: 0, heapIndex: heapIndexStart+6},
 ]
 
 const createInitialHeapItems = (heapSize) => {
@@ -290,7 +294,7 @@ const useStyles = makeStyles((theme) => ({
 
 const MinHeapAnimation = () => {
   // the first item to be checked for comparison with the heap head, is the last item of the array
-  const initialCompareItemIndex = initialNumberItems.length - 1
+  const initialCompareItemIndex = numbersLength - 1
   const classes = useStyles()
   const [frame, setFrame] = useState(initialItems)
   const [heapData, setHeapData] = useState(initialHeapItems)
@@ -409,7 +413,7 @@ const MinHeapAnimation = () => {
     // we use the compareItemIndex to get directly the current compare item instead of looping through the items array
     // this improves time complexity from O(n) to O(1)
     // const dataItems = new DataItems(prevItems)
-    let heapHeadIndex = dataItems.heapHeadIndex()
+    let heapHeadIndex = dataItems.heapHeadIndex
     let heapHead = dataItems.items[heapHeadIndex]
     if (dataItems.isCompareItem(compareItemIndex)) {
       // if the current item is next to the heap head, move the pointer (the iterFromIndex)
