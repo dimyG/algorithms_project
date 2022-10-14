@@ -47,28 +47,18 @@ class DataItems {
     this.frameQueue.enqueue(_.cloneDeep(frameData))  // enqueued data should not change. They should not be references [...frameData] also works
   }
 
-  updateHeapHeadIndex = (index1, index2) => {
-    // if one of the two items is the heap head, update the heapHeadIndex attribute.
-    if (this.items[index1].heapIndex === heapIndexStart) {
-      this.heapHeadIndex = index1
-    }
-    else if (this.items[index2].heapIndex === heapIndexStart) {
-      this.heapHeadIndex = index2
-    }
-  }
-
-  // O(1) time complexity
   swap = (index1, index2) => {
-    // An item changes position if its x and y coordinates change
-    console.log("  swapping items:", index1, index2)
+    // data is bound to the dom elements by the data id (using d3). This means that d3 will check an item by its data id.
+    // if it's x and y coordinates are different it will change its position. To swap two elements, we swap their id and value
+    // (keeping the elements in their initial index). d3 sees that these ids have now different x and y coordinates and moves them.
+    // This way we also keep the order of the items array intact which means that we can find the heap items by their index [O(1)].
+    // console.log("  swapping items:", index1, index2)
     if (index1 === -1 || index2 === -2) return
     let item1 = this.items[index1]
     let item2 = this.items[index2]
-    this.items[index1] = {...item2, value: item1.value, id: item1.id}
-    this.items[index2] = {...item1, value: item2.value, id: item2.id}
+    this.items[index1] = {...item1, id: item2.id, value: item2.value}
+    this.items[index2] = {...item2, id: item1.id, value: item1.value}
     this.enqueueFrame()
-    this.updateHeapHeadIndex(index1, index2)
-    // console.log("  all items After swap:", this.items)
   }
 
   moveRight = (step = iterationXStep) => {
@@ -80,19 +70,31 @@ class DataItems {
     this.enqueueFrame()
   }
 
-  reheap = ( itemIndex) => {
-    // itemIndex: the index of the item that was just swapped inwards. We want to see if it needs to be swapped again
-    // todo use the item.heapIndex property to avoid sorting
-    const sortedHeapItems = this.heapItemsSortedByIndex()  // avoid sorting
+  reheap = (itemIndex) => {
+    // itemIndex: the index of the item that was just swapped inwards. We want to see if it needs to move further inwards.
+    // console.log("re-heaping item:", itemIndex)
     const item = this.items[itemIndex]
-    // const item = this.items.filter((item) => item.heapIndex = heapIndex+1)[0]
-    // console.log("  reheaping item:", item)
-    const smallerKid = this.getKidForSwap(item, sortedHeapItems)
-    if (!smallerKid) return  // item has no kids
-    const smallerKidIndex = this.items.indexOf(smallerKid)  // temporary solution
+    const kidsIndexes = this.kids(item.heapIndex)
+    if (!kidsIndexes) return  // item has no kids
+    const smallerKidIndex = kidsIndexes[0]
+    if (this.items[smallerKidIndex].value > item.value) return  // item is smaller than its kids
     this.swap(itemIndex, smallerKidIndex)
     // "reheap" again starting from the swapped item that took the place of the child
-    this.reheap(itemIndex)  // have in mind that currently the heapIndex property starts from 1 not 0
+    this.reheap(smallerKidIndex)
+  }
+
+  kids = (heapIndex) => {
+    // returns the kids' indexes of the item with the given heapIndex sorted by value (heapIndex starts from 1)
+    // it assumes that there are always two kids
+    if (!heapIndex || heapIndex > heapSize/2) return null  // if item not in heap, or if it is a leaf, it has no kids
+    const kid1HeapIndex = heapIndex * 2
+    const kid2HeapIndex = heapIndex * 2 + 1
+    const kid1Index = numbersLength - 1 + kid1HeapIndex
+    const kid2Index = numbersLength - 1 + kid2HeapIndex
+    const kid1 = this.items[kid1Index]
+    const kid2 = this.items[kid2Index]
+    if (kid1.value <= kid2.value) return [kid1Index, kid2Index]
+    return [kid2Index, kid1Index]
   }
 
   isCompareItem = (index) => {
@@ -113,12 +115,6 @@ class DataItems {
     return this.items.filter(item => !item.heapIndex)
   }
 
-  heapItemsSortedByIndex = (items = this.heapItems()) => {
-    return items.sort((a, b) => {
-      return a.heapIndex - b.heapIndex
-    })
-  }
-
   itemByCoords = (x, y) => {
     // get the first Item with the given coordinates
     return this.items.filter(item => item.x === x && item.y === y)[0]
@@ -126,34 +122,6 @@ class DataItems {
 
   heapHead = () => {
     return this.items[this.heapHeadIndex]
-  }
-
-  itemKids = (heapItem, sortedHeapItems=this.heapItemsSortedByIndex()) => {
-    const itemHeapIndex = heapItem.heapIndex-1
-    const kid1Index = this.kid1Index(itemHeapIndex)
-    const kid2Index = this.kid2Index(itemHeapIndex)
-    if (this.hasKids(itemHeapIndex)) {
-      // if you are on nodes that have kids
-      // console.log("kid2Index index", kid2Index)
-      return [sortedHeapItems[kid1Index], sortedHeapItems[kid2Index]]
-    }
-    // console.log("  item:", heapItem, "has no kids")
-  }
-
-  itemKidsSorted = (heapItem, sortedHeapItems=this.heapItemsSortedByIndex()) => {
-    const kids = this.itemKids(heapItem, sortedHeapItems)
-    if (!kids) return
-    return kids.sort((a, b) => {
-      return a.value - b.value
-    })
-  }
-
-  getKidForSwap = (heapItem, sortedHeapItems=this.heapItemsSortedByIndex()) => {
-    const sortedKids = this.itemKidsSorted(heapItem, sortedHeapItems)
-    if (!sortedKids) return
-    for (const kid of sortedKids){
-      if (heapItem.value > kid.value) return kid
-    }
   }
 
   heapsLastIndex = () => this.heapItems().length - 1
@@ -209,17 +177,17 @@ const heapIndexStart = 1
 
 const initialNumberItems = Array(numbersLength).fill(0).map((item, index) => ({
   // the id is needed so that every item object is unique (and items.indexOf(item) returns always the unique item's index)
-  id: index +1, x: firstItemX + index * itemsXDistance, y: firstItemY, parent: null, value: randomNumbers[index], heapIndex: null
+  id: index, x: firstItemX + index * itemsXDistance, y: firstItemY, parent: null, value: randomNumbers[index], heapIndex: null
 }))
 
 const initialHeapItems = [
-  {id: initialNumberItems.length+1, x: heapHeadX, y: heapHeadY, value: 0, heapIndex: heapIndexStart},
-  {id: initialNumberItems.length+2, x: heapHeadX-heapItemsDistance*1.3, y: heapHeadY-heapItemsDistance, value: 0, heapIndex: heapIndexStart+1},
-  {id: initialNumberItems.length+3, x: heapHeadX+heapItemsDistance*1.3, y: heapHeadY-heapItemsDistance, value: 0, heapIndex: heapIndexStart+2},
-  {id: initialNumberItems.length+4, x: heapHeadX-heapItemsDistance*1.3-circleRadius*1.1, y: heapHeadY-heapItemsDistance*2.2, value: 0, heapIndex: heapIndexStart+3},
-  {id: initialNumberItems.length+5, x: heapHeadX-heapItemsDistance*1.3+circleRadius*1.1, y: heapHeadY-heapItemsDistance*2.2, value: 0, heapIndex: heapIndexStart+4},
-  {id: initialNumberItems.length+6, x: heapHeadX+heapItemsDistance*1.3-circleRadius*1.1, y: heapHeadY-heapItemsDistance*2.2, value: 0, heapIndex: heapIndexStart+5},
-  {id: initialNumberItems.length+7, x: heapHeadX+heapItemsDistance*1.3+circleRadius*1.1, y: heapHeadY-heapItemsDistance*2.2, value: 0, heapIndex: heapIndexStart+6},
+  {id: numbersLength, x: heapHeadX, y: heapHeadY, value: 0, heapIndex: heapIndexStart},
+  {id: numbersLength+1, x: heapHeadX-heapItemsDistance*1.3, y: heapHeadY-heapItemsDistance, value: 0, heapIndex: heapIndexStart+1},
+  {id: numbersLength+2, x: heapHeadX+heapItemsDistance*1.3, y: heapHeadY-heapItemsDistance, value: 0, heapIndex: heapIndexStart+2},
+  {id: numbersLength+3, x: heapHeadX-heapItemsDistance*1.3-circleRadius*1.1, y: heapHeadY-heapItemsDistance*2.2, value: 0, heapIndex: heapIndexStart+3},
+  {id: numbersLength+4, x: heapHeadX-heapItemsDistance*1.3+circleRadius*1.1, y: heapHeadY-heapItemsDistance*2.2, value: 0, heapIndex: heapIndexStart+4},
+  {id: numbersLength+5, x: heapHeadX+heapItemsDistance*1.3-circleRadius*1.1, y: heapHeadY-heapItemsDistance*2.2, value: 0, heapIndex: heapIndexStart+5},
+  {id: numbersLength+6, x: heapHeadX+heapItemsDistance*1.3+circleRadius*1.1, y: heapHeadY-heapItemsDistance*2.2, value: 0, heapIndex: heapIndexStart+6},
 ]
 
 const createInitialHeapItems = (heapSize) => {
@@ -249,7 +217,7 @@ const createInitialHeapItems = (heapSize) => {
     }
     console.log("index:", i, "layer", layer)
     items.push({
-      id: initialNumberItems.length+1, x: x, y: y, value: 0, heapIndex: i+1
+      id: numbersLength+1, x: x, y: y, value: 0, heapIndex: i+1
     })
     console.log(items)
   }
@@ -297,7 +265,7 @@ const MinHeapAnimation = () => {
   const initialCompareItemIndex = numbersLength - 1
   const classes = useStyles()
   const [frame, setFrame] = useState(initialItems)
-  const [heapData, setHeapData] = useState(initialHeapItems)
+  // const [heapData, setHeapData] = useState(initialHeapItems)
   // Maybe use dataItems.items as state and rerender the component whenever dataItems.items change?
   // Notice that if an object of the dataItems.items array changes, the items array itself doesn't
   const [dataItems, setDataItems] = useState(new DataItems(initialItems))
@@ -337,7 +305,12 @@ const MinHeapAnimation = () => {
       .attr("stroke-width", 0.1)
 
     svgElement.selectAll("circle.numberCircle")
-      .data(frame)
+      // we change the d3 default "bind by index" method, and bind the dom elements to the data by the id data attribute
+      // this way, when we want to swap two elements, we just swap their id and value data attributes. This, in turn,
+      // means that the index of the items in the array does not change. This is important because the heap items
+      // of the array remain always in their initial known indexes, and we can directly select them instead of searching through the
+      // array.
+      .data(frame, function(d) { return d ? d.id : this; })
       .join("circle")
       .transition().duration(frameTransitionDuration)
       .attr("cx", d => d.x)
@@ -350,7 +323,8 @@ const MinHeapAnimation = () => {
       .style("fill", circlesTheme.circleFill)
 
     svgElement.selectAll("text.numberValue")
-      .data(frame)
+      // we change the d3 default "bind by index" method, and bind the dom elements to the data by the id data attribute
+      .data(frame, function(d) { return d ? d.id : this; })
       .join("text")
       .transition().duration(frameTransitionDuration)
       .attr("dx", d => d.x)
@@ -362,7 +336,7 @@ const MinHeapAnimation = () => {
       .style('fill', circlesTheme.circleTextFill)
 
     svgElement.selectAll("circle.heapCircle")
-      .data(heapData)
+      .data(initialHeapItems)
       .join("circle")
       .attr("cx", d => d.x)
       .attr("cy", d => d.y)
@@ -373,19 +347,19 @@ const MinHeapAnimation = () => {
       .style("fill-opacity", circlesTheme.heapCircleFillOpacity)
       .style("fill", circlesTheme.heapCircleFill)
 
-    // Notice that one iteration can contain more than one animation frames. This means that the effect will run
+    // Notice that one movement iteration can contain more than one animation frames. This means that the effect will run
     // for each frame within the same iteration. In these cases we don't want to reiterate. We only want to reiterate
     // when the previous iteration has finished.
     if (!isFullyAnimated && inPlayMode && currentIterationFinished) moveItems(dataItems, compareItemIndex)
 
   }, [
-    frame, heapData, inPlayMode, currentIterationFinished,
+    frame, inPlayMode, currentIterationFinished,
     theme.name,  // theme.name so that every time the theme changes the effect runs and new circlesTheme is used
   ])
 
   const initialize = () => {
     setFrame(initialItems)
-    setHeapData(initialHeapItems)
+    // setHeapData(initialHeapItems)
     setDataItems(new DataItems(initialItems))
     setInPlayMode(false)
     setCurrentIterationFinished(true)
@@ -413,8 +387,6 @@ const MinHeapAnimation = () => {
     // we use the compareItemIndex to get directly the current compare item instead of looping through the items array
     // this improves time complexity from O(n) to O(1)
     // const dataItems = new DataItems(prevItems)
-    let heapHeadIndex = dataItems.heapHeadIndex
-    let heapHead = dataItems.items[heapHeadIndex]
     if (dataItems.isCompareItem(compareItemIndex)) {
       // if the current item is next to the heap head, move the pointer (the iterFromIndex)
       // to the next item to check for comparison (which is the previous one in the list)
@@ -424,10 +396,13 @@ const MinHeapAnimation = () => {
         return newIndex
       })
       const item = dataItems.items[compareItemIndex]
+      let heapHeadIndex = dataItems.heapHeadIndex
+      let heapHead = dataItems.heapHead()
       if (item.value > heapHead.value) {
         // console.log("pushing item to heap")
         dataItems.swap(compareItemIndex, heapHeadIndex)
-        dataItems.reheap(compareItemIndex)
+        // after swapping, the compareItem (it's value and id) is in the heapHeadIndex position, so we pass that to the heapify function
+        dataItems.reheap(heapHeadIndex)
         return dataItems.frameQueue
       }
     }
