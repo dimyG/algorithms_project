@@ -280,7 +280,6 @@ const MinHeapAnimation = () => {
   const isFullyAnimated = dataItems.isFullyAnimated()
 
   useEffect(() => {
-
     const circlesTheme = theme.heapCirclesTheme
 
     const svgElement = d3.select(ref.current)
@@ -568,18 +567,19 @@ const MinHeapAnimation = () => {
                     <Divider/>
                     <CardContent>
                       <Typography align={"justify"}>
-                        Using a Min Heap to find the biggest values of an array. One of the goals of a search engine is to collect and present to you
-                        the most relevant results based on your search query. Similarly, one of the goals of a recommendation system
-                        is to collect and present to you the most relevant results based on your personal interests. Both of these
-                        tasks have to tackle the same challenge. They have to select the most important items out of an array
-                        of all the available items. We can represent this problem with an array of random numbers, where the
-                        number represents the relevancy or importance. In this context the goal is to select the biggest numbers of the array.
-                        One way to do this, is to sort the array based on the number, and then select its first items. But sorting a huge
-                        array is a waste of resources in this case. You are going to sort a huge number of items that are completely irrelevant.
-                        A most efficient way to do it, is to use a Min Heap. A Min Heap is a binary tree data structure where
-                        each parent is smaller than its children. With this approach you have to compare every number with
-                        the head of the Min Heap and if it is bigger, swap them and rearrange the heap so that it remains a Min Heap.
-                        The animation has been done with the amazing <Link target="_blank" variant="body2" color="secondary" href="https://d3js.org/">D3.js</Link> library.
+                        Heap sort is one of the most efficient sorting algorithms.
+                        We use a min heap, a binary tree where the parent is smaller than its children and we compare all items of the array with the
+                        heap's head, swapping them if the item is bigger. Then we re-heap the min heap so that it remains a min heap. This means
+                        that the large item that was just swapped into the heap, will move down the heap so that its parent is smaller.
+                        We repeat this process until
+                        all items of the array have been compared with the heap's head. At the end, we will end up with the largest items
+                        of the array inside the min heap. This way we loop through the array one time to compare all items with the heap's head, an operation
+                        of O(n) time complexity. If the item is bigger then the heap's head, we have to swap them and eventually re-heap, which is
+                        an operation of O(log n) time complexity. So in the worst case scenario where we have a re-heap for every item, the total
+                        time complexity is O(n log n). The fastest known sorting algorithm as far as the worst case is concerned.
+                        There are a lot of practical applications for this type of sorting, like finding the most popular products on an e-commerce website,
+                        the most relevant search results for a given query, the most relevant recommendations based on your interests etc.
+                        The animation is performed with the amazing <Link target="_blank" variant="body2" color="secondary" href="https://d3js.org/">D3.js</Link> library.
                       </Typography>
                     </CardContent>
                   </Card>
