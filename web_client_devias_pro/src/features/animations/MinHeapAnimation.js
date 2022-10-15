@@ -16,6 +16,9 @@ import {Play as PlayIcon, Pause as PauseIcon, FastForward as FastForwardIcon, Re
 import Page from "../../components/Page";
 import { useTheme } from "@material-ui/core/styles";
 import _ from "lodash";
+import {useSelector} from "react-redux";
+import {algorithmByIdSelector, getAllStatusSelector} from "../algorithms/algorithmsSlice";
+import BoxedCircularProgress from "../../components/BoxedCircularProgress";
 
 class Queue {
   constructor(items = []) {
@@ -33,7 +36,6 @@ class Queue {
 }
 
 class DataItems {
-  // todo think the case of millions of items, remove sorting and iterating through all items
   constructor(items = [], frameQueue = new Queue(), heap = null) {
     this.items = items
     this.frameQueue = frameQueue
@@ -260,9 +262,11 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const MinHeapAnimation = () => {
+const MinHeapAnimation = ({algorithmId}) => {
   // the first item to be checked for comparison with the heap head, is the last item of the array
   const initialCompareItemIndex = numbersLength - 1
+  const getAllAlgorithmsStatus = useSelector(state => getAllStatusSelector(state))
+  const algorithm = useSelector(state => algorithmByIdSelector(state, algorithmId))
   const classes = useStyles()
   const [frame, setFrame] = useState(initialItems)
   // const [heapData, setHeapData] = useState(initialHeapItems)
@@ -352,7 +356,7 @@ const MinHeapAnimation = () => {
     if (!isFullyAnimated && inPlayMode && currentIterationFinished) moveItems(dataItems, compareItemIndex)
 
   }, [
-    frame, inPlayMode, currentIterationFinished,
+    frame, inPlayMode, currentIterationFinished, getAllAlgorithmsStatus,
     theme.name,  // theme.name so that every time the theme changes the effect runs and new circlesTheme is used
   ])
 
@@ -464,12 +468,16 @@ const MinHeapAnimation = () => {
     >
       <Container maxWidth="lg">
         <Box mt={1}>
+          {getAllAlgorithmsStatus === ("idle") || getAllAlgorithmsStatus === ("loading") ? (
+            <BoxedCircularProgress/>
+          ) : (
           <Grid container>
+
             <Grid item xs={12} md={7}>
-<Box m={1}>
+            <Box m={1}>
 
     <Card >
-      <CardHeader title="Animation"/>
+      <CardHeader title={algorithm.name + " Animation"}/>
       <Divider/>
       <CardContent>
 
@@ -558,12 +566,11 @@ const MinHeapAnimation = () => {
       </CardContent>
     </Card>
 </Box>
-
             </Grid>
             <Grid item xs={12} md={5}>
               <Box m={1}>
               <Card >
-                    <CardHeader title="Description"/>
+                    <CardHeader title={algorithm.name + " Description"}/>
                     <Divider/>
                     <CardContent>
                       <Typography align={"justify"}>
@@ -585,7 +592,9 @@ const MinHeapAnimation = () => {
                   </Card>
               </Box>
             </Grid>
+
           </Grid>
+                  )}
         </Box>
       </Container>
     </Page>
