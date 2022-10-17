@@ -42,10 +42,15 @@ class DataItems {
     this.heapHeadIndex = numbersLength  // the initial heap head is the first item after the number items
   }
 
-  // O(m) space complexity, where m is the number if attributes in the item
+  heapHead = () => this.items[this.heapHeadIndex]
+
+  firstNonHeapItem = () => this.items[0]
+
+  // O(n*m) space complexity, where n is the number of items and m is the number of attributes of each item
   enqueueFrame = (frameData = this.items) => {
     // A frame is the array of items (items have new coordinates in each frame).
     // console.log("  enqueueing frame:", frameData)
+    // todo viewport: store only the items that are within the viewport. these are the oly items that will be rendered. This will make it a 0(1) space complexity
     this.frameQueue.enqueue(_.cloneDeep(frameData))  // enqueued data should not change. They should not be references [...frameData] also works
   }
 
@@ -63,8 +68,10 @@ class DataItems {
     this.enqueueFrame()
   }
 
-  moveRight = (step = iterationXStep) => {
+  moveRight = (step = moveXStep) => {
     // move all non heap items to the right by changing their x coordinate
+    // todo viewport: This is the slowest part of the animation. It's O(n). it can be improved by moving only the small subset
+    // of items that are within the viewport making it a O(1) operation.
     this.items = this.items.map((item, index) => {
       if (!item.heapIndex) return {...item, x: item.x + step}
       return {...item}
@@ -108,48 +115,15 @@ class DataItems {
     return (!item.heapIndex && Math.abs(item.x - heapHead.x) < 1)
   }
 
-  heapItems = () => {
-    // get the items that belong to the heap
-    return this.items.filter(item => item.heapIndex)
-  }
-
-  nonHeapItems = () => {
-    return this.items.filter(item => !item.heapIndex)
-  }
-
   itemByCoords = (x, y) => {
     // get the first Item with the given coordinates
     return this.items.filter(item => item.x === x && item.y === y)[0]
   }
 
-  heapHead = () => {
-    return this.items[this.heapHeadIndex]
-  }
-
-  heapsLastIndex = () => this.heapItems().length - 1
-
-  kid1Index = heapIndex => heapIndex * 2 + 1
-
-  kid2Index = heapIndex => this.kid1Index(heapIndex) + 1
-
-  hasKids = heapIndex => {
-    // if the items first kid index is less than the last index of the heap, then the item has kids
-    return this.kid1Index(heapIndex) <= this.heapsLastIndex()
-  }
-
   parentIndex = heapIndex => Math.floor(Math.abs(heapIndex - 1) * 0.5)
 
-  firstNonHeapItem = () => {
-    const nonHeapItems = this.nonHeapItems()
-    // const sorted = nonHeapItems.sort((a, b) => a.x - b.x)
-    return nonHeapItems[0]
-  }
-
-  isFullyAnimated = () => {
-    // The first nonHeapItem has the smallest X coordinate so it is the furthest one on the left. If it is greater
-    // than the viewBox width, then it has been moved completely on the left and all items have been processed.
-    return this.firstNonHeapItem().x > svgViewBoxWidth
-  }
+  // Has the first non heap item been moved pass the heap's head?
+  isFullyAnimated = () => this.firstNonHeapItem().x > this.heapHead().x
 
 }
 
@@ -165,10 +139,10 @@ const circleRadius = svgViewBoxWidth * 0.05
 const heapCircleRadius = circleRadius * 0.9
 const circleTextSize = circleRadius * 0.8
 const itemsXDistance = circleRadius * 2.5
-const iterationXStep = itemsXDistance
+const moveXStep = itemsXDistance
 const heapItemsDistance = itemsXDistance * 0.7
 // const lastItemX = heapHeadX - stepRight
-const firstItemX = heapHeadX - iterationXStep * numbersLength  // so that the last item is one step before the heap head
+const firstItemX = heapHeadX - moveXStep * numbersLength  // so that the last item is one step before the heap head
 const firstItemY = heapHeadY + 2.1 * circleRadius
 
 // *2 since there are (at most) two animations for each item (move right and compare)
