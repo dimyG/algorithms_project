@@ -314,6 +314,7 @@ const MinHeapAnimation = ({algorithmId}) => {
 
   const isFullyAnimated = dataItems.isFullyAnimated()
   let pushToAndPopFromItems = false  //  no reason to add this to the state. It isn't used for rendering. Have in mind that it didn't work as expected when it was in state
+  let wasItemCompared = false
 
   useEffect(() => {
     const circlesTheme = theme.heapCirclesTheme
@@ -400,6 +401,7 @@ const MinHeapAnimation = ({algorithmId}) => {
     setCurrentIterationFinished(true)
     setCompareItemIndex(initialCompareItemIndex)
     pushToAndPopFromItems = false
+    wasItemCompared = false
     // setNumIterations(0)
   }
 
@@ -425,13 +427,7 @@ const MinHeapAnimation = ({algorithmId}) => {
     // console.log("compareItemIndex", compareItemIndex)
     // console.log("compareItem", dataItems.items[compareItemIndex])
     if (dataItems.isCompareItemNextToHeapHead(compareItemIndex)) {
-      // if the current item is the item to compare with the heap head, move the compareItemIndex
-      // to the next item (which is the previous one in the list)
-      setCompareItemIndex(prevIndex => {
-        let newIndex = prevIndex - 1
-        if (newIndex < 0) newIndex = 0
-        return newIndex
-      })
+      wasItemCompared = true
       const item = dataItems.items[compareItemIndex]
       let heapHeadIndex = dataItems.heapHeadIndex
       let heapHead = dataItems.heapHead()
@@ -465,9 +461,18 @@ const MinHeapAnimation = ({algorithmId}) => {
   }
 
   const updateCompareItemIndex = () => {
-    // if we have pushed new item to the array, and popped the last non heap item,
-    // we have to update the compareItemIndex so that it points to the same item as before the push and pop
+    if (wasItemCompared) {
+      // if the current item was the item to compare with the heap head, move the compareItemIndex
+      // to the next item (which is the previous one in the list)
+      setCompareItemIndex(prevIndex => {
+        let newIndex = prevIndex - 1
+        if (newIndex < 0) newIndex = 0
+        return newIndex
+      })
+    }
     if (pushToAndPopFromItems) {
+      // if we have pushed new item to the array, and popped the last non heap item,
+      // we have to update the compareItemIndex so that it points to the same item as before the push and pop
       // console.log("increasing compareItemIndex + 1")
       setCompareItemIndex(prevIndex => prevIndex + 1)
     }
@@ -475,6 +480,7 @@ const MinHeapAnimation = ({algorithmId}) => {
 
   const moveItems = async (dataItems, compareItemIndex) => {
     pushToAndPopFromItems = false
+    wasItemCompared = false
     setCurrentIterationFinished(false)
     console.log("Iterating...")
     console.log(dataItems.items)
