@@ -17,6 +17,7 @@ import Page from "../../components/Page";
 import { useTheme } from "@material-ui/core/styles";
 import _ from "lodash";
 import {useSelector} from "react-redux";
+import {nanoid} from "@reduxjs/toolkit";
 import {algorithmByIdSelector, getAllStatusSelector} from "../algorithms/algorithmsSlice";
 import BoxedCircularProgress from "../../components/BoxedCircularProgress";
 
@@ -35,22 +36,31 @@ class Queue {
   }
 }
 
+// The dataItems object has the items array as an attribute. The items array is composed of the non heap items followed
+// by the heap items. The heap items are always the last items in the array.
+// There is a fixed number of items in the items array. If the animation continues after the last item, a new random item
+// is pushed in the first position of the items array and the last item is removed. This way the items array always has the same length.
+// We keep track of the index of the item that is to be compared with the heap head. We store the animation frames for
+// each step, in a frame queue attribute of the dataItems object.
 class DataItems {
   constructor(items = [], frameQueue = new Queue(), heap = null) {
     this.items = items
     this.frameQueue = frameQueue
     this.heapHeadIndex = numbersLength  // the initial heap head is the first item after the number items
+    this.firstNonHeapItemIndex = 0
+    this.lastNonHeapItemIndex = numbersLength - 1
   }
 
   heapHead = () => this.items[this.heapHeadIndex]
 
-  firstNonHeapItem = () => this.items[0]
+  firstNonHeapItem = () => this.items[this.firstNonHeapItemIndex]
 
-  // O(n*m) space complexity, where n is the number of items and m is the number of attributes of each item
+  lastNonHeapItem = () => this.items[this.lastNonHeapItemIndex]
+
+  // O(h) space complexity, where h is the number of frames which is equal to the heap's height
   enqueueFrame = (frameData = this.items) => {
     // A frame is the array of items (items have new coordinates in each frame).
     // console.log("  enqueueing frame:", frameData)
-    // todo viewport: store only the items that are within the viewport. these are the oly items that will be rendered. This will make it a 0(1) space complexity
     this.frameQueue.enqueue(_.cloneDeep(frameData))  // enqueued data should not change. They should not be references [...frameData] also works
   }
 
@@ -106,7 +116,7 @@ class DataItems {
     return [kid2Index, kid1Index]
   }
 
-  isCompareItem = (index) => {
+  isCompareItemNextToHeapHead = (index) => {
     if (index < 0) return false  // if all items have been compared
     // console.log("Items:", this.items)
     let heapHead = this.heapHead()
@@ -125,11 +135,34 @@ class DataItems {
   // Has the first non heap item been moved pass the heap's head?
   isFullyAnimated = () => this.firstNonHeapItem().x > this.heapHead().x
 
-}
+  pushNewNumberItem = () => {
+    // insert new item in the start of the items array
+    // console.log("pushing new number item")
+    const firstNumberItemX = this.items[0].x - itemsXDistance
+    const newNumberItem = {'id': nanoid(), 'x': firstNumberItemX, 'y': firstItemY, 'value': generateRandomNumber(), 'heapIndex': null}
+    this.items.splice(0, 0, newNumberItem)
+  }
 
-const numbersLength = 20
-const generateRandomArray = (length, maxValue) => [...new Array(length)].map(() => Math.round(Math.random() * maxValue));
-const randomNumbers = generateRandomArray(numbersLength, 100)
+  popLastNumberItem = () => {
+    // console.log("popping last number item")
+    const indexToPop = this.lastNonHeapItemIndex + 1  // one item has been added to the start of the array previously, so the array has grown by 1
+    this.items.splice(indexToPop, 1)
+  }
+
+  pushToAndPopFromItems = () => {
+    // if first number item x >= viewBox start frame.push(new number item)
+    if (this.firstNonHeapItem().x === viewBoxStartX - itemsXDistance) {
+      // console.log("items:", this.items)
+      this.pushNewNumberItem()
+      // console.log("items after push:", this.items)
+      this.popLastNumberItem()
+      // console.log("items after pop:", this.items)
+      // debugger
+      return true
+    }
+  }
+
+}
 
 const svgViewBoxWidth = 100
 const svgViewBoxHeight = 45
@@ -141,20 +174,44 @@ const circleTextSize = circleRadius * 0.8
 const itemsXDistance = circleRadius * 2.5
 const moveXStep = itemsXDistance
 const heapItemsDistance = itemsXDistance * 0.7
-// const lastItemX = heapHeadX - stepRight
-const firstItemX = heapHeadX - moveXStep * numbersLength  // so that the last item is one step before the heap head
+const lastItemX = heapHeadX - moveXStep
+// const firstItemX = heapHeadX - moveXStep * numbersLength  // so that the last item is one step before the heap head
 const firstItemY = heapHeadY + 2.1 * circleRadius
+
+const viewBoxStartX = 0
+const viewBoxEndX = svgViewBoxWidth
+
+const arrayLength = 20
+const heapSize = 7
+
+const numNumberItemsInViewBox = Math.floor(svgViewBoxWidth / itemsXDistance) + 1
+const numNumberItemsInFrame = numNumberItemsInViewBox + heapSize
+const numbersLength = numNumberItemsInFrame
+
+const maxNumber = 100
+
+// const generateRandomArray = (length, maxValue) => [...new Array(length)].map(() => Math.round(Math.random() * maxValue));
+const generateRandomNumber = (maxValue = maxNumber) => Math.round(Math.random() * maxValue);
+// const randomNumbers = generateRandomArray(numbersLength, maxNumber)
 
 // *2 since there are (at most) two animations for each item (move right and compare)
 // +1 since the last item is 1 step from heap head, and +2 to continue 2 steps after all items have been compared with heap head
-const maxIterations = numbersLength * 2 + 1 + 2
-const heapSize = 7
+// const maxIterations = arrayLength * 2 + 1 + 2
 const heapIndexStart = 1
 
-const initialNumberItems = Array(numbersLength).fill(0).map((item, index) => ({
+// const initialNumberItems = Array(numbersLength).fill(0).map((item, index) => ({
+//   // the id is needed so that every item object is unique (and items.indexOf(item) returns always the unique item's index)
+//   id: index, x: firstItemX + index * itemsXDistance, y: firstItemY, parent: null, value: randomNumbers[index], heapIndex: null
+// }))
+
+let initialNumberItems = Array(numbersLength).fill(0).map((item, index) => ({
   // the id is needed so that every item object is unique (and items.indexOf(item) returns always the unique item's index)
-  id: index, x: firstItemX + index * itemsXDistance, y: firstItemY, parent: null, value: randomNumbers[index], heapIndex: null
+  id: index, x: lastItemX - index * itemsXDistance, y: firstItemY, parent: null, value: generateRandomNumber(), heapIndex: null
 }))
+
+// we reverse so that the last number item (with the largest x value) is the last one before the heap head in the array.
+// We want this, because this is the structure that we use to find the compare item currently.
+initialNumberItems.reverse()
 
 const initialHeapItems = [
   {id: numbersLength, x: heapHeadX, y: heapHeadY, value: 0, heapIndex: heapIndexStart},
@@ -256,6 +313,7 @@ const MinHeapAnimation = ({algorithmId}) => {
   const ref = useRef()
 
   const isFullyAnimated = dataItems.isFullyAnimated()
+  let pushToAndPopFromItems = false  //  no reason to add this to the state. It isn't used for rendering. Have in mind that it didn't work as expected when it was in state
 
   useEffect(() => {
     const circlesTheme = theme.heapCirclesTheme
@@ -341,6 +399,7 @@ const MinHeapAnimation = ({algorithmId}) => {
     setInPlayMode(false)
     setCurrentIterationFinished(true)
     setCompareItemIndex(initialCompareItemIndex)
+    pushToAndPopFromItems = false
     // setNumIterations(0)
   }
 
@@ -363,10 +422,11 @@ const MinHeapAnimation = ({algorithmId}) => {
   const generateCurrentStepFrames = (dataItems, compareItemIndex) => {
     // we use the compareItemIndex to get directly the current compare item instead of looping through the items array
     // this improves time complexity from O(n) to O(1)
-    // const dataItems = new DataItems(prevItems)
-    if (dataItems.isCompareItem(compareItemIndex)) {
-      // if the current item is next to the heap head, move the pointer (the iterFromIndex)
-      // to the next item to check for comparison (which is the previous one in the list)
+    // console.log("compareItemIndex", compareItemIndex)
+    // console.log("compareItem", dataItems.items[compareItemIndex])
+    if (dataItems.isCompareItemNextToHeapHead(compareItemIndex)) {
+      // if the current item is the item to compare with the heap head, move the compareItemIndex
+      // to the next item (which is the previous one in the list)
       setCompareItemIndex(prevIndex => {
         let newIndex = prevIndex - 1
         if (newIndex < 0) newIndex = 0
@@ -376,7 +436,6 @@ const MinHeapAnimation = ({algorithmId}) => {
       let heapHeadIndex = dataItems.heapHeadIndex
       let heapHead = dataItems.heapHead()
       if (item.value > heapHead.value) {
-        // console.log("pushing item to heap")
         dataItems.swap(compareItemIndex, heapHeadIndex)
         // after swapping, the compareItem (it's value and id) is in the heapHeadIndex position, so we pass that to the heapify function
         dataItems.reheap(heapHeadIndex)
@@ -405,16 +464,28 @@ const MinHeapAnimation = ({algorithmId}) => {
     // if (!play) throw "error"
   }
 
+  const updateCompareItemIndex = () => {
+    // if we have pushed new item to the array, and popped the last non heap item,
+    // we have to update the compareItemIndex so that it points to the same item as before the push and pop
+    if (pushToAndPopFromItems) {
+      // console.log("increasing compareItemIndex + 1")
+      setCompareItemIndex(prevIndex => prevIndex + 1)
+    }
+  }
+
   const moveItems = async (dataItems, compareItemIndex) => {
+    pushToAndPopFromItems = false
     setCurrentIterationFinished(false)
     console.log("Iterating...")
+    console.log(dataItems.items)
     // setNumIterations(prevCount => prevCount + 1)
     const frameQueue = generateCurrentStepFrames(dataItems, compareItemIndex)
-    console.log(" Animating queue:", frameQueue)
+    // console.log(" Animating queue:", frameQueue)
     const promise = await animateQueue(frameQueue)
     console.log(" Queue animated")
+    pushToAndPopFromItems = dataItems.pushToAndPopFromItems()
+    updateCompareItemIndex()
     setCurrentIterationFinished(true)
-    // debugger
     return promise
   }
 
