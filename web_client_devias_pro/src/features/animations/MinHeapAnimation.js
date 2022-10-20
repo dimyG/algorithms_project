@@ -46,9 +46,9 @@ class DataItems {
   constructor(items = [], frameQueue = new Queue(), heap = null) {
     this.items = items
     this.frameQueue = frameQueue
-    this.heapHeadIndex = numbersLength  // the initial heap head is the first item after the number items
+    this.heapHeadIndex = nonHeapItemsLength  // the initial heap head is the first item after the non heap items
     this.firstNonHeapItemIndex = 0
-    this.lastNonHeapItemIndex = numbersLength - 1
+    this.lastNonHeapItemIndex = nonHeapItemsLength - 1
   }
 
   heapHead = () => this.items[this.heapHeadIndex]
@@ -108,8 +108,8 @@ class DataItems {
     if (!heapIndex || heapIndex > heapSize/2) return null  // if item not in heap, or if it is a leaf, it has no kids
     const kid1HeapIndex = heapIndex * 2
     const kid2HeapIndex = heapIndex * 2 + 1
-    const kid1Index = numbersLength - 1 + kid1HeapIndex
-    const kid2Index = numbersLength - 1 + kid2HeapIndex
+    const kid1Index = nonHeapItemsLength - 1 + kid1HeapIndex
+    const kid2Index = nonHeapItemsLength - 1 + kid2HeapIndex
     const kid1 = this.items[kid1Index]
     const kid2 = this.items[kid2Index]
     if (kid1.value <= kid2.value) return [kid1Index, kid2Index]
@@ -135,30 +135,30 @@ class DataItems {
   // The first non heap item moved pass the heap's head or the heap's head has already taken the max value
   isSearchComplete = () => {
     const heapHead = this.heapHead()
-    return this.firstNonHeapItem().x > heapHead.x || heapHead.value === maxNumber
+    return this.firstNonHeapItem().x > heapHead.x || heapHead.value === maxItemValue
   }
 
-  pushNewNumberItem = () => {
+  pushNewNonHeapItem = () => {
     // insert new item in the start of the items array
-    // console.log("pushing new number item")
-    const firstNumberItemX = this.items[0].x - itemsXDistance
-    const newNumberItem = {'id': nanoid(), 'x': firstNumberItemX, 'y': firstItemY, 'value': generateRandomNumber(), 'heapIndex': null}
-    this.items.splice(0, 0, newNumberItem)
+    // console.log("pushing new non heap item")
+    const firstNonHeapItemX = this.items[0].x - itemsXDistance
+    const newNonHeapItem = {'id': nanoid(), 'x': firstNonHeapItemX, 'y': firstNonHeapItemY, 'value': generateRandomNumber(), 'heapIndex': null}
+    this.items.splice(0, 0, newNonHeapItem)
   }
 
-  popLastNumberItem = () => {
-    // console.log("popping last number item")
+  popLastNonHeapItem = () => {
+    // console.log("popping last non heap item")
     const indexToPop = this.lastNonHeapItemIndex + 1  // one item has been added to the start of the array previously, so the array has grown by 1
     this.items.splice(indexToPop, 1)
   }
 
   pushToAndPopFromItems = () => {
-    // if first number item x >= viewBox start frame.push(new number item)
+    // if first non heap item x >= viewBox start frame.push(new non heap item)
     if (this.firstNonHeapItem().x === viewBoxStartX - itemsXDistance) {
       // console.log("items:", this.items)
-      this.pushNewNumberItem()
+      this.pushNewNonHeapItem()
       // console.log("items after push:", this.items)
-      this.popLastNumberItem()
+      this.popLastNonHeapItem()
       // console.log("items after pop:", this.items)
       // debugger
       return true
@@ -177,53 +177,38 @@ const circleTextSize = circleRadius * 0.8
 const itemsXDistance = circleRadius * 2.5
 const moveXStep = itemsXDistance
 const heapItemsDistance = itemsXDistance * 0.7
-const lastItemX = heapHeadX - moveXStep
-// const firstItemX = heapHeadX - moveXStep * numbersLength  // so that the last item is one step before the heap head
-const firstItemY = heapHeadY + 2.1 * circleRadius
-
+const lastNonHeapItemX = heapHeadX - moveXStep
+// const firstItemX = heapHeadX - moveXStep * nonHeapItemsLength  // so that the last item is one step before the heap head
+const firstNonHeapItemY = heapHeadY + 2.1 * circleRadius
 const viewBoxStartX = 0
-const viewBoxEndX = svgViewBoxWidth
-
-const arrayLength = 20
+// const viewBoxEndX = svgViewBoxWidth
 const heapSize = 7
-
-const numNumberItemsInViewBox = Math.floor(svgViewBoxWidth / itemsXDistance) + 1
-const numNumberItemsInFrame = numNumberItemsInViewBox + heapSize
-const numbersLength = numNumberItemsInFrame
-
-const maxNumber = 100
-
-// const generateRandomArray = (length, maxValue) => [...new Array(length)].map(() => Math.round(Math.random() * maxValue));
-const generateRandomNumber = (maxValue = maxNumber) => Math.round(Math.random() * maxValue);
-// const randomNumbers = generateRandomArray(numbersLength, maxNumber)
-
-// *2 since there are (at most) two animations for each item (move right and compare)
-// +1 since the last item is 1 step from heap head, and +2 to continue 2 steps after all items have been compared with heap head
-// const maxIterations = arrayLength * 2 + 1 + 2
+const nonHeapItemsInViewBox = Math.floor(svgViewBoxWidth / itemsXDistance) + 1
+const nonHeapItemsInFrame = nonHeapItemsInViewBox + heapSize
+const nonHeapItemsLength = nonHeapItemsInFrame
+const maxItemValue = 100
 const heapIndexStart = 1
 
-// const initialNumberItems = Array(numbersLength).fill(0).map((item, index) => ({
-//   // the id is needed so that every item object is unique (and items.indexOf(item) returns always the unique item's index)
-//   id: index, x: firstItemX + index * itemsXDistance, y: firstItemY, parent: null, value: randomNumbers[index], heapIndex: null
-// }))
+// const generateRandomArray = (length, maxValue) => [...new Array(length)].map(() => Math.round(Math.random() * maxValue));
+const generateRandomNumber = (maxValue = maxItemValue) => Math.round(Math.random() * maxItemValue);
 
-let initialNumberItems = Array(numbersLength).fill(0).map((item, index) => ({
+let initialNonHeapItems = Array(nonHeapItemsLength).fill(0).map((item, index) => ({
   // the id is needed so that every item object is unique (and items.indexOf(item) returns always the unique item's index)
-  id: index, x: lastItemX - index * itemsXDistance, y: firstItemY, parent: null, value: generateRandomNumber(), heapIndex: null
+  id: index, x: lastNonHeapItemX - index * itemsXDistance, y: firstNonHeapItemY, parent: null, value: generateRandomNumber(), heapIndex: null
 }))
 
-// we reverse so that the last number item (with the largest x value) is the last one before the heap head in the array.
+// we reverse so that the last non heap item (with the largest x value) is the last one before the heap head in the array.
 // We want this, because this is the structure that we use to find the compare item currently.
-initialNumberItems.reverse()
+initialNonHeapItems.reverse()
 
 const initialHeapItems = [
-  {id: numbersLength, x: heapHeadX, y: heapHeadY, value: 0, heapIndex: heapIndexStart},
-  {id: numbersLength+1, x: heapHeadX-heapItemsDistance*1.3, y: heapHeadY-heapItemsDistance, value: 0, heapIndex: heapIndexStart+1},
-  {id: numbersLength+2, x: heapHeadX+heapItemsDistance*1.3, y: heapHeadY-heapItemsDistance, value: 0, heapIndex: heapIndexStart+2},
-  {id: numbersLength+3, x: heapHeadX-heapItemsDistance*1.3-circleRadius*1.1, y: heapHeadY-heapItemsDistance*2.2, value: 0, heapIndex: heapIndexStart+3},
-  {id: numbersLength+4, x: heapHeadX-heapItemsDistance*1.3+circleRadius*1.1, y: heapHeadY-heapItemsDistance*2.2, value: 0, heapIndex: heapIndexStart+4},
-  {id: numbersLength+5, x: heapHeadX+heapItemsDistance*1.3-circleRadius*1.1, y: heapHeadY-heapItemsDistance*2.2, value: 0, heapIndex: heapIndexStart+5},
-  {id: numbersLength+6, x: heapHeadX+heapItemsDistance*1.3+circleRadius*1.1, y: heapHeadY-heapItemsDistance*2.2, value: 0, heapIndex: heapIndexStart+6},
+  {id: nonHeapItemsLength, x: heapHeadX, y: heapHeadY, value: 0, heapIndex: heapIndexStart},
+  {id: nonHeapItemsLength+1, x: heapHeadX-heapItemsDistance*1.3, y: heapHeadY-heapItemsDistance, value: 0, heapIndex: heapIndexStart+1},
+  {id: nonHeapItemsLength+2, x: heapHeadX+heapItemsDistance*1.3, y: heapHeadY-heapItemsDistance, value: 0, heapIndex: heapIndexStart+2},
+  {id: nonHeapItemsLength+3, x: heapHeadX-heapItemsDistance*1.3-circleRadius*1.1, y: heapHeadY-heapItemsDistance*2.2, value: 0, heapIndex: heapIndexStart+3},
+  {id: nonHeapItemsLength+4, x: heapHeadX-heapItemsDistance*1.3+circleRadius*1.1, y: heapHeadY-heapItemsDistance*2.2, value: 0, heapIndex: heapIndexStart+4},
+  {id: nonHeapItemsLength+5, x: heapHeadX+heapItemsDistance*1.3-circleRadius*1.1, y: heapHeadY-heapItemsDistance*2.2, value: 0, heapIndex: heapIndexStart+5},
+  {id: nonHeapItemsLength+6, x: heapHeadX+heapItemsDistance*1.3+circleRadius*1.1, y: heapHeadY-heapItemsDistance*2.2, value: 0, heapIndex: heapIndexStart+6},
 ]
 
 const createInitialHeapItems = (heapSize) => {
@@ -253,14 +238,14 @@ const createInitialHeapItems = (heapSize) => {
     }
     console.log("index:", i, "layer", layer)
     items.push({
-      id: numbersLength+1, x: x, y: y, value: 0, heapIndex: i+1
+      id: nonHeapItemsLength+1, x: x, y: y, value: 0, heapIndex: i+1
     })
     console.log(items)
   }
   return items
 }
 
-const initialItems = initialNumberItems.concat(initialHeapItems)
+const initialItems = initialNonHeapItems.concat(initialHeapItems)
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -298,7 +283,7 @@ const useStyles = makeStyles((theme) => ({
 
 const MinHeapAnimation = ({algorithmId}) => {
   // the first item to be checked for comparison with the heap head, is the last item of the array
-  const initialCompareItemIndex = numbersLength - 1
+  const initialCompareItemIndex = nonHeapItemsLength - 1
   const getAllAlgorithmsStatus = useSelector(state => getAllStatusSelector(state))
   const algorithm = useSelector(state => algorithmByIdSelector(state, algorithmId))
   const classes = useStyles()
