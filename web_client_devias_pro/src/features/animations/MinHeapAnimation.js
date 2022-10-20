@@ -495,8 +495,8 @@ const MinHeapAnimation = ({algorithmId}) => {
     return promise
   }
 
-  const onNextClick = async () => {
-    await moveItems(dataItems, compareItemIndex)
+  const onNextClick = () => {
+    if (!isFullyAnimated && currentIterationFinished) moveItems(dataItems, compareItemIndex)
   }
 
   const onPlayClick = () => {
@@ -566,7 +566,7 @@ const MinHeapAnimation = ({algorithmId}) => {
                   <FastForwardIcon />
                 </SvgIcon>
               }
-              disabled={inPlayMode || isFullyAnimated}
+              disabled={inPlayMode || isFullyAnimated || currentIterationFinished === false}
               onClick={onNextClick}
               >
               <Typography variant="h3">Next</Typography>
