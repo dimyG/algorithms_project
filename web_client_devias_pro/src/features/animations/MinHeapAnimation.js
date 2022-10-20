@@ -132,8 +132,11 @@ class DataItems {
 
   parentIndex = heapIndex => Math.floor(Math.abs(heapIndex - 1) * 0.5)
 
-  // Has the first non heap item been moved pass the heap's head?
-  isFullyAnimated = () => this.firstNonHeapItem().x > this.heapHead().x
+  // The first non heap item moved pass the heap's head or the heap's head has already taken the max value
+  isSearchComplete = () => {
+    const heapHead = this.heapHead()
+    return this.firstNonHeapItem().x > heapHead.x || heapHead.value === maxNumber
+  }
 
   pushNewNumberItem = () => {
     // insert new item in the start of the items array
@@ -312,7 +315,7 @@ const MinHeapAnimation = ({algorithmId}) => {
   const theme = useTheme()
   const ref = useRef()
 
-  const isFullyAnimated = dataItems.isFullyAnimated()
+  const searchCompleted = dataItems.isSearchComplete()
   let pushToAndPopFromItems = false  //  no reason to add this to the state. It isn't used for rendering. Have in mind that it didn't work as expected when it was in state
   let wasItemCompared = false
 
@@ -386,7 +389,7 @@ const MinHeapAnimation = ({algorithmId}) => {
     // Notice that one movement iteration can contain more than one animation frames. This means that the effect will run
     // for each frame within the same iteration. In these cases we don't want to reiterate. We only want to reiterate
     // when the previous iteration has finished.
-    if (!isFullyAnimated && inPlayMode && currentIterationFinished) moveItems(dataItems, compareItemIndex)
+    if (!searchCompleted && inPlayMode && currentIterationFinished) moveItems(dataItems, compareItemIndex)
 
   }, [
     frame, inPlayMode, currentIterationFinished, getAllAlgorithmsStatus,
@@ -496,7 +499,7 @@ const MinHeapAnimation = ({algorithmId}) => {
   }
 
   const onNextClick = () => {
-    if (!isFullyAnimated && currentIterationFinished) moveItems(dataItems, compareItemIndex)
+    if (!searchCompleted && currentIterationFinished) moveItems(dataItems, compareItemIndex)
   }
 
   const onPlayClick = () => {
@@ -551,7 +554,7 @@ const MinHeapAnimation = ({algorithmId}) => {
                   {inPlayMode ? <PauseIcon /> : <PlayIcon />}
                 </SvgIcon>
               }
-              disabled={isFullyAnimated}
+              disabled={searchCompleted}
               onClick={() => onPlayClick()}
               >
               <Typography variant="h3">{playButtonText}</Typography>
@@ -566,7 +569,7 @@ const MinHeapAnimation = ({algorithmId}) => {
                   <FastForwardIcon />
                 </SvgIcon>
               }
-              disabled={inPlayMode || isFullyAnimated || currentIterationFinished === false}
+              disabled={inPlayMode || searchCompleted || currentIterationFinished === false}
               onClick={onNextClick}
               >
               <Typography variant="h3">Next</Typography>
