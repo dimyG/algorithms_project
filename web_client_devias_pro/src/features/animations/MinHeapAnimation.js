@@ -292,7 +292,7 @@ const MinHeapAnimation = ({algorithmId}) => {
   // Maybe use dataItems.items as state and rerender the component whenever dataItems.items change?
   // Notice that if an object of the dataItems.items array changes, the items array itself doesn't
   const [dataItems, setDataItems] = useState(new DataItems(initialItems))
-  const [speedMode, setSpeedMode] = useState("Fast")
+  const [speedMode, setSpeedMode] = useState("Very Fast")
   const [inPlayMode, setInPlayMode] = useState(false)
   const [currentIterationFinished, setCurrentIterationFinished] = useState(true)
   const [compareItemIndex, setCompareItemIndex] = useState(initialCompareItemIndex)
@@ -393,11 +393,11 @@ const MinHeapAnimation = ({algorithmId}) => {
     // setNumIterations(0)
   }
 
-  const speedOptions = ["Slow", "Normal", "Fast", "Super Fast"]
+  const speedOptions = ["Slow", "Normal", "Fast", "Very Fast", "Maximum"]
   // const playModeOptions = ["Playing", "Paused"]
   const playButtonText = inPlayMode ? "Pause" : "Play"
 
-  let frameTransitionDuration = 350
+  let frameTransitionDuration = 150
 
   if (speedMode === "Slow"){
     frameTransitionDuration = 1000
@@ -405,8 +405,10 @@ const MinHeapAnimation = ({algorithmId}) => {
     frameTransitionDuration = 600
   } else if (speedMode === "Fast"){
     frameTransitionDuration = 350
-  } else if (speedMode === "Super Fast"){
+  } else if (speedMode === "Very Fast"){
     frameTransitionDuration = 150
+  } else if (speedMode === "Maximum"){
+    frameTransitionDuration = 0
   }
 
   const generateCurrentStepFrames = (dataItems, compareItemIndex) => {
