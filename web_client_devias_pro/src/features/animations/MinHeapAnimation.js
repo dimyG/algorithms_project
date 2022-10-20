@@ -618,7 +618,7 @@ const MinHeapAnimation = ({algorithmId}) => {
                         Heap sort is one of the most efficient sorting algorithms.
                         We use a min heap, a binary tree where the parent is smaller than its children and we compare all items of the array with the
                         heap's head, swapping them if the item is bigger. Then we re-heap the min heap so that it remains a min heap. This means
-                        that the large item that was just swapped into the heap, will move down the heap so that its parent is smaller.
+                        that the large item that was just swapped into the heap, will move down the heap to the deepest possible level.
                         We repeat this process until
                         all items of the array have been compared with the heap's head. At the end, we will end up with the largest items
                         of the array inside the min heap. This way we loop through the array one time to compare all items with the heap's head, an operation
