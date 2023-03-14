@@ -38,3 +38,9 @@ db_from_env = dj_database_url.config()
 DATABASES = {
     'default': db_from_env
 }
+
+# Redirect all requests to HTTPS (using the django.middleware.security.SecurityMiddleware)
+# Under the hood, Heroku router (over)writes the X-Forwarded-Proto and the X-Forwarded-Port request headers.
+# The app must check X-Forwarded-Proto and respond with a redirect response when it is not https but http.
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = True
