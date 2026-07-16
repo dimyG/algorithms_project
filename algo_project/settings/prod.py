@@ -1,5 +1,4 @@
 import os
-import dj_database_url
 from .base import BASE_DIR, REACT_APP_DIR, MIDDLEWARE, TEMPLATES
 
 DEBUG = False
@@ -11,7 +10,12 @@ static_host_env = os.environ.get('DJANGO_STATIC_HOST', '')
 
 SECRET_KEY = secret_key_env
 
-ALLOWED_HOSTS = ['algozoom.com', 'algorithms-project.herokuapp.com', '127.0.0.1']
+ALLOWED_HOSTS = [
+    'algozoom.com',
+    'algorithms-project.herokuapp.com',
+    '127.0.0.1',
+    '.onrender.com',  # allow subdomains of onrender.com for the Render
+]
 
 STATIC_HOST = static_host_env
 
@@ -31,12 +35,12 @@ TEMPLATES[0]['DIRS'].append(
     os.path.join(REACT_APP_DIR, 'build')
 )
 
-# Reads db from DATABASE_URL env variable. if variable doesn't exist doesn't affect the Databases dictionary
-# DATABASE_URL format: postgres://USER:PASSWORD@HOST:PORT/NAME
-db_from_env = dj_database_url.config()
-
+# Use sqlite for production to stay in Render's free tier
 DATABASES = {
-    'default': db_from_env
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
 }
 
 # Redirect all requests to HTTPS (using the django.middleware.security.SecurityMiddleware)
