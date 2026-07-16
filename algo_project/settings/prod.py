@@ -12,6 +12,7 @@ SECRET_KEY = secret_key_env
 
 ALLOWED_HOSTS = [
     'algozoom.com',
+    'www.algozoom.com',
     'algorithms-project.herokuapp.com',
     '127.0.0.1',
     '.onrender.com',  # allow subdomains of onrender.com for the Render
